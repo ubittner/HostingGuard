@@ -1,0 +1,12 @@
+{
+  "id": "{434313C6-3D42-8D9D-2555-1733683F847C}",
+  "author": "Ulrich Bittner",
+  "name": "HostingGuard",
+  "url": "https://github.com/ubittner/HostingGuard",
+  "compatibility": {
+    "version": "5.5"
+  },
+  "version": "1.00",
+  "build": 1,
+  "date": 1607413028
+}

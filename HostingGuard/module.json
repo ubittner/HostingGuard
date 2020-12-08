@@ -1,0 +1,14 @@
+{
+  "id": "{B431E743-166F-1742-B2E9-17EE1FF4F6D2}",
+  "name": "Hosting Guard",
+  "type": 3,
+  "vendor": "hosting.de",
+  "aliases": [
+    "Hosting Guard"
+  ],
+  "url": "https://github.com/ubittner/HostingGuard/",
+  "parentRequirements": [],
+  "childRequirements": [],
+  "implemented": [],
+  "prefix": "HG"
+}
