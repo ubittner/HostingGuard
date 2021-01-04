@@ -14,31 +14,81 @@
       "caption": "Wartungsmodus"
     },
     {
-      "type": "PasswordTextBox",
-      "name": "API_Key",
-      "caption": "API Key",
-      "width": "600px",
-      "multiline": true
+      "type": "Label",
+      "caption": " "
     },
     {
-      "type": "NumberSpinner",
-      "name": "Timeout",
-      "caption": "Timeout",
-      "suffix": "Millisekunden"
+      "type": "ExpansionPanel",
+      "caption": "API",
+      "items": [
+        {
+          "type": "PasswordTextBox",
+          "name": "API_Key",
+          "caption": "API Key",
+          "width": "600px",
+          "multiline": true
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "Timeout",
+          "caption": "Timeout",
+          "suffix": "Millisekunden"
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "UpdateInterval",
+          "caption": "Aktualisierungsintervall",
+          "suffix": "Minuten"
+        }
+      ]
     },
     {
-      "type": "NumberSpinner",
-      "name": "UpdateInterval",
-      "caption": "Aktualisierungsintervall",
-      "suffix": "Minuten"
+      "type": "Label",
+      "caption": " "
     },
     {
-      "type": "NumberSpinner",
-      "name": "CriticalCondition",
-      "caption": "Kritischer Zustand",
-      "suffix": "%",
-      "minimum": 0,
-      "maximum": 100
+      "type": "ExpansionPanel",
+      "caption": "WebSpaces",
+      "items": [
+        {
+          "type": "NumberSpinner",
+          "name": "ThresholdExceeded",
+          "caption": "\u26a0\ufe0f Schwellenwert überschritten",
+          "suffix": "%",
+          "minimum": 0,
+          "maximum": 100
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "CriticalCondition",
+          "caption": "\u2757 Kritischer Zustand",
+          "suffix": "%",
+          "minimum": 0,
+          "maximum": 100
+        }
+      ]
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Databases",
+      "items": [
+        {
+          "type": "NumberSpinner",
+          "name": "DatabaseThresholdExceeded",
+          "caption": "\u26a0\ufe0f Schwellenwert überschritten",
+          "suffix": "%",
+          "minimum": 0,
+          "maximum": 100
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "DatabaseCriticalCondition",
+          "caption": "\u2757 Kritischer Zustand",
+          "suffix": "%",
+          "minimum": 0,
+          "maximum": 100
+        }
+      ]
     }
   ],
   "actions": [
@@ -54,8 +104,13 @@
     },
     {
       "type": "Button",
-      "caption": "Update Web Spaces List",
-      "onClick": "HG_UpdateWebSpacesList($id);"
+      "caption": "Listing Databases",
+      "onClick": "echo $data = HG_ListingDatabases($id); print_r($data);"
+    },
+    {
+      "type": "Button",
+      "caption": "Update Data",
+      "onClick": "HG_UpdateData($id);"
     }
   ],
   "status": [

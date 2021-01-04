@@ -26,6 +26,12 @@ trait HG_hostingAPI
         return $this->SendDataToHosting($endpoint, 'POST');
     }
 
+    public function ListingDatabases(): string
+    {
+        $endpoint = 'https://secure.hosting.de/api/database/v1/json/databasesFind';
+        return $this->SendDataToHosting($endpoint, 'POST');
+    }
+
     #################### Private
 
     /**
