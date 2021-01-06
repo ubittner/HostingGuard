@@ -9,18 +9,14 @@
       "caption": " "
     },
     {
-      "type": "CheckBox",
-      "name": "MaintenanceMode",
-      "caption": "Wartungsmodus"
-    },
-    {
-      "type": "Label",
-      "caption": " "
-    },
-    {
       "type": "ExpansionPanel",
       "caption": "API",
       "items": [
+        {
+          "type": "CheckBox",
+          "name": "MaintenanceMode",
+          "caption": "Wartungsmodus"
+        },
         {
           "type": "PasswordTextBox",
           "name": "API_Key",
@@ -43,16 +39,16 @@
       ]
     },
     {
-      "type": "Label",
-      "caption": " "
-    },
-    {
       "type": "ExpansionPanel",
-      "caption": "WebSpaces",
+      "caption": "Schwellenwerte",
       "items": [
         {
+          "type": "Label",
+          "caption": "WebSpace"
+        },
+        {
           "type": "NumberSpinner",
-          "name": "ThresholdExceeded",
+          "name": "WebSpaceThresholdExceeded",
           "caption": "\u26a0\ufe0f Schwellenwert überschritten",
           "suffix": "%",
           "minimum": 0,
@@ -60,18 +56,16 @@
         },
         {
           "type": "NumberSpinner",
-          "name": "CriticalCondition",
+          "name": "WebSpaceCriticalCondition",
           "caption": "\u2757 Kritischer Zustand",
           "suffix": "%",
           "minimum": 0,
           "maximum": 100
-        }
-      ]
-    },
-    {
-      "type": "ExpansionPanel",
-      "caption": "Databases",
-      "items": [
+        },
+        {
+          "type": "Label",
+          "caption": "\nDatabase"
+        },
         {
           "type": "NumberSpinner",
           "name": "DatabaseThresholdExceeded",
@@ -89,28 +83,132 @@
           "maximum": 100
         }
       ]
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Benachrichtigungen",
+      "items": [
+        {
+          "type": "SelectModule",
+          "name": "WebFront",
+          "caption": "Push (WebFront)",
+          "moduleID": "{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}"
+        },
+        {
+          "type": "SelectModule",
+          "name": "SMTP",
+          "caption": "E-Mail (SMTP)",
+          "moduleID": "{375EAF21-35EF-4BC4-83B3-C780FD8BD88A}"
+        },
+        {
+          "type": "List",
+          "name": "MailRecipients",
+          "caption": "E-Mail Empfänger",
+          "rowCount": 5,
+          "add": true,
+          "delete": true,
+          "columns": [
+            {
+              "caption": "Aktiviert",
+              "name": "Use",
+              "width": "100px",
+              "add": true,
+              "edit": {
+                "type": "CheckBox"
+              }
+            },
+            {
+              "caption": "Empfänger",
+              "name": "Name",
+              "width": "350px",
+              "add": "",
+              "edit": {
+                "type": "ValidationTextBox"
+              }
+            },
+            {
+              "caption": "E-Mail Adresse",
+              "name": "Address",
+              "width": "350px",
+              "add": "@",
+              "edit": {
+                "type": "ValidationTextBox"
+              }
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "caption": "Sofortige Benachrichtigung"
+        },
+        {
+          "type": "CheckBox",
+          "name": "UseImmediateNotificationThresholdExceeded",
+          "caption": "\u26a0\ufe0f Schwellenwert überschritten"
+        },
+        {
+          "type": "CheckBox",
+          "name": "UseImmediateNotificationCriticalCondition",
+          "caption": "\u2757 Kritischer Zustand"
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "UseImmediateNotificationLimit",
+              "caption": "Maximal eine Benachrichtigung bis"
+            },
+            {
+              "type": "Label",
+              "caption": " "
+            },
+            {
+              "type": "SelectTime",
+              "name": "ResetImmediateNotificationLimitTime",
+              "caption": "Uhrzeit"
+            }
+          ]
+        },
+        {
+          "type": "CheckBox",
+          "name": "UseImmediateNotificationPush",
+          "caption": "Push"
+        },
+        {
+          "type": "CheckBox",
+          "name": "UseImmediateNotificationMail",
+          "caption": "E-Mail"
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "type": "Button",
-      "caption": "Listing Virtual Machines",
-      "onClick": "echo $data = HG_ListingVirtualMachines($id); print_r($data);"
-    },
-    {
-      "type": "Button",
-      "caption": "Listing Web Spaces",
-      "onClick": "echo $data = HG_ListingWebSpaces($id); print_r($data);"
-    },
-    {
-      "type": "Button",
-      "caption": "Listing Databases",
-      "onClick": "echo $data = HG_ListingDatabases($id); print_r($data);"
-    },
-    {
-      "type": "Button",
-      "caption": "Update Data",
-      "onClick": "HG_UpdateData($id);"
+      "type": "ExpansionPanel",
+      "caption": "Entwicklerbereich API",
+      "items": [
+        {
+          "type": "Button",
+          "caption": "Get Virtual Machines",
+          "onClick": "echo $data = HG_GetVirtualMachines($id); print_r($data);"
+        },
+        {
+          "type": "Button",
+          "caption": "Get Web Spaces",
+          "onClick": "echo $data = HG_GetWebSpaces($id); print_r($data);"
+        },
+        {
+          "type": "Button",
+          "caption": "Get Databases",
+          "onClick": "echo $data = HG_GetDatabases($id); print_r($data);"
+        },
+        {
+          "type": "Button",
+          "caption": "Update Data",
+          "onClick": "HG_UpdateData($id);"
+        }
+      ]
     }
   ],
   "status": [

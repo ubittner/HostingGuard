@@ -9,7 +9,8 @@ include_once __DIR__ . '/helper/autoload.php';
 class HostingGuard extends IPSModule
 {
     //Helper
-    use HG_hostingAPI;
+    use hostingAPI;
+    use notification;
 
     public function Create()
     {
@@ -17,7 +18,8 @@ class HostingGuard extends IPSModule
         parent::Create();
         $this->RegisterProperties();
         $this->RegisterVariables();
-        $this->RegisterTimer('UpdateData', 0, 'HG_UpdateData(' . $this->InstanceID . ');');
+        $this->RegisterTimers();
+        $this->RegisterAttributes();
     }
 
     public function Destroy()
@@ -36,10 +38,13 @@ class HostingGuard extends IPSModule
         if (IPS_GetKernelRunlevel() != KR_READY) {
             return;
         }
-        $this->ValidateConfiguration();
-        $this->UpdateWebSpacesList();
-        $this->UpdateDatabasesList();
-        $this->SetUpdateDataTimer();
+        $this->ResetImmediateNotificationLimit();
+        if (!$this->ValidateConfiguration()) {
+            $this->DisableTimers();
+        }
+        $this->UpdateData();
+        $this->SetTimer_UpdateData();
+        $this->SetTimer_ResetImmediateNotificationLimit();
     }
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
@@ -61,196 +66,14 @@ class HostingGuard extends IPSModule
 
     public function UpdateData(): void
     {
-        $this->UpdateWebSpacesList();
-        $this->UpdateDatabasesList();
+        $this->CheckData('WebSpaces');
+        $this->CheckData('Databases');
     }
 
-    public function UpdateWebSpacesList(): void
+    public function ResetImmediateNotificationLimit(): void
     {
-        $success = false;
-        $webSpaces = json_decode($this->ListingWebSpaces(), true);
-        if (empty($webSpaces)) {
-            return;
-        }
-        $webSpacesList = [];
-        if (array_key_exists('response', $webSpaces)) {
-            $response = $webSpaces['response'];
-            if (array_key_exists('data', $response)) {
-                $data = $response['data'];
-                if (!empty($data)) {
-                    $success = true;
-                    foreach ($data as $webSpace) {
-                        //poolId
-                        $poolID = '-';
-                        if (array_key_exists('poolId', $webSpace)) {
-                            $poolID = $webSpace['poolId'];
-                            if (empty($poolID)) {
-                                $poolID = '-';
-                            }
-                        }
-                        //name
-                        $name = '-';
-                        if (array_key_exists('name', $webSpace)) {
-                            $name = $webSpace['name'];
-                            if (empty($name)) {
-                                $name = '-';
-                            }
-                        }
-                        //storageQuota
-                        $storageQuota = '-';
-                        if (array_key_exists('storageQuota', $webSpace)) {
-                            $storageQuota = $webSpace['storageQuota'];
-                            if (empty($storageQuota)) {
-                                $storageQuota = '-';
-                            }
-                        }
-                        //storageUsed
-                        $storageUsed = '-';
-                        if (array_key_exists('storageUsed', $webSpace)) {
-                            $storageUsed = $webSpace['storageUsed'];
-                            if (empty($storageUsed)) {
-                                $storageUsed = '-';
-                            }
-                        }
-                        //storageQuotaUsedRatio
-                        $storageQuotaUsedRatio = '-';
-                        if (array_key_exists('storageQuotaUsedRatio', $webSpace)) {
-                            $storageQuotaUsedRatio = $webSpace['storageQuotaUsedRatio'];
-                            if (empty($storageQuotaUsedRatio)) {
-                                $storageQuotaUsedRatio = '-';
-                            }
-                        }
-                        array_push($webSpacesList, [
-                            'poolId'                => $poolID,
-                            'name'                  => $name,
-                            'storageQuota'          => $storageQuota,
-                            'storageUsed'           => $storageUsed,
-                            'storageQuotaUsedRatio' => $storageQuotaUsedRatio]);
-                    }
-                }
-            }
-        }
-        //Update list
-        $string = "<table style='width: 100%; border-collapse: collapse;'>";
-        $string .= '<tr><td><b>Status</b></td><td><b>poolId</b></td><td><b>name</b></td><td><b>storageQuota</b></td><td><b>storageUsed</b></td><td><b>storageQuotaUsedRatio</b></td></tr>';
-        usort($webSpacesList, function ($a, $b)
-        {
-            return $a['poolId'] <=> $b['poolId'];
-        });
-        //Rebase array
-        $webSpacesList = array_values($webSpacesList);
-        if (!empty($webSpacesList)) {
-            foreach ($webSpacesList as $webSpace) {
-                $unicode = json_decode('"\u2705"'); # white_check_mark
-                if ($webSpace['storageQuotaUsedRatio'] > $this->ReadPropertyInteger('ThresholdExceeded')) {
-                    $unicode = json_decode('"\u26a0\ufe0f"'); # warning
-                }
-                if ($webSpace['storageQuotaUsedRatio'] > $this->ReadPropertyInteger('CriticalCondition')) {
-                    $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
-                }
-                $string .= '<tr><td>' . $unicode . '</td><td>' . $webSpace['poolId'] . '</td><td>' . $webSpace['name'] . '</td><td>' . $webSpace['storageQuota'] . '</td><td>' . $webSpace['storageUsed'] . '</td><td>' . $webSpace['storageQuotaUsedRatio'] . '</td></tr>';
-            }
-        }
-        $string .= '</table>';
-        $this->SetValue('WebSpacesList', $string);
-        if ($success) {
-            $this->SetValue('LastUpdate', date('d.m.Y H:i:s'));
-        }
-        $this->SetUpdateDataTimer();
-    }
-
-    public function UpdateDatabasesList(): void
-    {
-        $success = false;
-        $databases = json_decode($this->ListingDatabases(), true);
-        if (empty($databases)) {
-            return;
-        }
-        $databasesList = [];
-        if (array_key_exists('response', $databases)) {
-            $response = $databases['response'];
-            if (array_key_exists('data', $response)) {
-                $data = $response['data'];
-                if (!empty($data)) {
-                    $success = true;
-                    foreach ($data as $database) {
-                        //poolId
-                        $poolID = '-';
-                        if (array_key_exists('poolId', $database)) {
-                            $poolID = $database['poolId'];
-                            if (empty($poolID)) {
-                                $poolID = '-';
-                            }
-                        }
-                        //name
-                        $name = '-';
-                        if (array_key_exists('name', $database)) {
-                            $name = $database['name'];
-                            if (empty($name)) {
-                                $name = '-';
-                            }
-                        }
-                        //storageQuota
-                        $storageQuota = '-';
-                        if (array_key_exists('storageQuota', $database)) {
-                            $storageQuota = $database['storageQuota'];
-                            if (empty($storageQuota)) {
-                                $storageQuota = '-';
-                            }
-                        }
-                        //storageUsed
-                        $storageUsed = '-';
-                        if (array_key_exists('storageUsed', $database)) {
-                            $storageUsed = $database['storageUsed'];
-                            if (empty($storageUsed)) {
-                                $storageUsed = '-';
-                            }
-                        }
-                        //storageQuotaUsedRatio
-                        $storageQuotaUsedRatio = '-';
-                        if (array_key_exists('storageQuotaUsedRatio', $database)) {
-                            $storageQuotaUsedRatio = $database['storageQuotaUsedRatio'];
-                            if (empty($storageQuotaUsedRatio)) {
-                                $storageQuotaUsedRatio = '-';
-                            }
-                        }
-                        array_push($databasesList, [
-                            'poolId'                => $poolID,
-                            'name'                  => $name,
-                            'storageQuota'          => $storageQuota,
-                            'storageUsed'           => $storageUsed,
-                            'storageQuotaUsedRatio' => $storageQuotaUsedRatio]);
-                    }
-                }
-            }
-        }
-        //Update list
-        $string = "<table style='width: 100%; border-collapse: collapse;'>";
-        $string .= '<tr><td><b>Status</b></td><td><b>poolId</b></td><td><b>name</b></td><td><b>storageQuota</b></td><td><b>storageUsed</b></td><td><b>storageQuotaUsedRatio</b></td></tr>';
-        usort($databasesList, function ($a, $b)
-        {
-            return $a['poolId'] <=> $b['poolId'];
-        });
-        //Rebase array
-        $databasesList = array_values($databasesList);
-        if (!empty($databasesList)) {
-            foreach ($databasesList as $database) {
-                $unicode = json_decode('"\u2705"'); # white_check_mark
-                if ($database['storageQuotaUsedRatio'] > $this->ReadPropertyInteger('DatabaseThresholdExceeded')) {
-                    $unicode = json_decode('"\u26a0\ufe0f"'); # warning
-                }
-                if ($database['storageQuotaUsedRatio'] > $this->ReadPropertyInteger('DatabaseCriticalCondition')) {
-                    $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
-                }
-                $string .= '<tr><td>' . $unicode . '</td><td>' . $database['poolId'] . '</td><td>' . $database['name'] . '</td><td>' . $database['storageQuota'] . '</td><td>' . $database['storageUsed'] . '</td><td>' . $database['storageQuotaUsedRatio'] . '</td></tr>';
-            }
-        }
-        $string .= '</table>';
-        $this->SetValue('DatabasesList', $string);
-        if ($success) {
-            $this->SetValue('LastUpdate', date('d.m.Y H:i:s'));
-        }
-        $this->SetUpdateDataTimer();
+        $this->WriteAttributeString('ImmediateNotificationList', '[]');
+        $this->SetTimer_ResetImmediateNotificationLimit();
     }
 
     #################### Private
@@ -266,10 +89,19 @@ class HostingGuard extends IPSModule
         $this->RegisterPropertyString('API_Key', '');
         $this->RegisterPropertyInteger('Timeout', 5000);
         $this->RegisterPropertyInteger('UpdateInterval', 30);
-        $this->RegisterPropertyInteger('ThresholdExceeded', 80);
-        $this->RegisterPropertyInteger('CriticalCondition', 90);
+        $this->RegisterPropertyInteger('WebSpaceThresholdExceeded', 80);
+        $this->RegisterPropertyInteger('WebSpaceCriticalCondition', 90);
         $this->RegisterPropertyInteger('DatabaseThresholdExceeded', 60);
         $this->RegisterPropertyInteger('DatabaseCriticalCondition', 80);
+        $this->RegisterPropertyInteger('WebFront', 0);
+        $this->RegisterPropertyInteger('SMTP', 0);
+        $this->RegisterPropertyString('MailRecipients', '[]');
+        $this->RegisterPropertyBoolean('UseImmediateNotificationThresholdExceeded', true);
+        $this->RegisterPropertyBoolean('UseImmediateNotificationCriticalCondition', true);
+        $this->RegisterPropertyBoolean('UseImmediateNotificationLimit', true);
+        $this->RegisterPropertyString('ResetImmediateNotificationLimitTime', '{"hour":7,"minute":0,"second":0}');
+        $this->RegisterPropertyBoolean('UseImmediateNotificationPush', true);
+        $this->RegisterPropertyBoolean('UseImmediateNotificationMail', true);
     }
 
     private function RegisterVariables(): void
@@ -294,28 +126,59 @@ class HostingGuard extends IPSModule
         }
     }
 
-    private function SetUpdateDataTimer(): void
+    private function RegisterTimers(): void
+    {
+        $this->RegisterTimer('UpdateData', 0, 'HG_UpdateData(' . $this->InstanceID . ');');
+        $this->RegisterTimer('ResetImmediateNotificationLimit', 0, 'HG_ResetImmediateNotificationLimit(' . $this->InstanceID . ');');
+    }
+
+    private function DisableTimers(): void
+    {
+        $this->SetTimerInterval('UpdateData', 0);
+        $this->SetTimerInterval('ResetImmediateNotificationLimit', 0);
+    }
+
+    private function SetTimer_UpdateData(): void
     {
         $milliseconds = $this->ReadPropertyInteger('UpdateInterval') * 1000 * 60;
         $this->SetTimerInterval('UpdateData', $milliseconds);
     }
 
-    private function ValidateConfiguration(): void
+    private function SetTimer_ResetImmediateNotificationLimit(): void
+    {
+        if (!$this->ReadPropertyBoolean('UseImmediateNotificationLimit')) {
+            $interval = 0;
+        } else {
+            $interval = $this->GetInterval('ResetImmediateNotificationLimitTime');
+        }
+        $this->SetTimerInterval('ResetImmediateNotificationLimit', $interval);
+    }
+
+    private function RegisterAttributes(): void
+    {
+        $this->RegisterAttributeString('ImmediateNotificationList', '[]');
+    }
+
+    private function ValidateConfiguration(): bool
     {
         $this->SendDebug(__FUNCTION__, 'Validate configuration', 0);
         $status = 102;
+        $result = true;
         //API key
         $apiKey = $this->ReadPropertyString('API_Key');
         if (empty($apiKey)) {
             $status = 201;
+            $result = false;
         }
         //Maintenance mode
         $maintenance = $this->CheckMaintenanceMode();
         if ($maintenance) {
             $status = 104;
+            $result = false;
         }
         IPS_SetDisabled($this->InstanceID, $maintenance);
         $this->SetStatus($status);
+        return $result;
     }
 
     private function CheckMaintenanceMode(): bool
@@ -326,5 +189,177 @@ class HostingGuard extends IPSModule
             $this->LogMessage('ID ' . $this->InstanceID . ', ' . __FUNCTION__ . ', Abbruch, der Wartungsmodus ist aktiv!', KL_WARNING);
         }
         return $result;
+    }
+
+    private function GetInterval(string $PropertyName): int
+    {
+        $now = time();
+        $reviewTime = json_decode($this->ReadPropertyString($PropertyName));
+        $hour = $reviewTime->hour;
+        $minute = $reviewTime->minute;
+        $second = $reviewTime->second;
+        $definedTime = $hour . ':' . $minute . ':' . $second;
+        if (time() >= strtotime($definedTime)) {
+            $timestamp = mktime($hour, $minute, $second, (int) date('n'), (int) date('j') + 1, (int) date('Y'));
+        } else {
+            $timestamp = mktime($hour, $minute, $second, (int) date('n'), (int) date('j'), (int) date('Y'));
+        }
+        return ($timestamp - $now) * 1000;
+    }
+
+    private function CheckData(string $Category): bool
+    {
+        $this->SetTimer_UpdateData();
+        switch ($Category) {
+            case 'Databases':
+                $categoryData = json_decode($this->GetDatabases(), true);
+                if (empty($categoryData)) {
+                    return false;
+                }
+                $categoryName = '(Database)';
+                $propertyThresholdExceeded = floatval($this->ReadPropertyInteger('DatabaseThresholdExceeded'));
+                $propertyCriticalCondition = floatval($this->ReadPropertyInteger('DatabaseCriticalCondition'));
+                $ident = 'DatabasesList';
+                break;
+
+            default:
+                $categoryData = json_decode($this->GetWebSpaces(), true);
+                if (empty($categoryData)) {
+                    return false;
+                }
+                $categoryName = '(WebSpace)';
+                $propertyThresholdExceeded = floatval($this->ReadPropertyInteger('WebSpaceThresholdExceeded'));
+                $propertyCriticalCondition = floatval($this->ReadPropertyInteger('WebSpaceCriticalCondition'));
+                $ident = 'WebSpacesList';
+        }
+        $table = [];
+        if (array_key_exists('response', $categoryData)) {
+            $response = $categoryData['response'];
+            if (array_key_exists('data', $response)) {
+                $data = $response['data'];
+                if (!empty($data)) {
+                    foreach ($data as $dataElement) {
+                        //poolId
+                        $poolID = '-';
+                        if (array_key_exists('poolId', $dataElement)) {
+                            $poolID = $dataElement['poolId'];
+                            if (empty($poolID)) {
+                                $poolID = '-';
+                            }
+                        }
+                        //name
+                        $name = '-';
+                        if (array_key_exists('name', $dataElement)) {
+                            $name = $dataElement['name'];
+                            if (empty($name)) {
+                                $name = '-';
+                            }
+                        }
+                        //storageQuota
+                        $storageQuota = '-';
+                        if (array_key_exists('storageQuota', $dataElement)) {
+                            $storageQuota = $dataElement['storageQuota'];
+                            if (empty($storageQuota)) {
+                                $storageQuota = '-';
+                            }
+                        }
+                        //storageUsed
+                        $storageUsed = '-';
+                        if (array_key_exists('storageUsed', $dataElement)) {
+                            $storageUsed = $dataElement['storageUsed'];
+                            if (empty($storageUsed)) {
+                                $storageUsed = '-';
+                            }
+                        }
+                        //storageQuotaUsedRatio
+                        $storageQuotaUsedRatio = '-';
+                        if (array_key_exists('storageQuotaUsedRatio', $dataElement)) {
+                            $storageQuotaUsedRatio = $dataElement['storageQuotaUsedRatio'];
+                            if (empty($storageQuotaUsedRatio)) {
+                                $storageQuotaUsedRatio = '-';
+                            }
+                        }
+                        array_push($table, [
+                            'poolId'                => $poolID,
+                            'name'                  => $name,
+                            'storageQuota'          => $storageQuota,
+                            'storageUsed'           => $storageUsed,
+                            'storageQuotaUsedRatio' => $storageQuotaUsedRatio]);
+                    }
+                }
+            }
+        }
+        $string = "<table style='width: 100%; border-collapse: collapse;'>";
+        $string .= '<tr><td><b>Status</b></td><td><b>poolId</b></td><td><b>name</b></td><td><b>storageQuota</b></td><td><b>storageUsed</b></td><td><b>storageQuotaUsedRatio</b></td></tr>';
+        usort($table, function ($a, $b)
+        {
+            return $a['poolId'] <=> $b['poolId'];
+        });
+        $table = array_values($table);
+        $messages = [];
+        if (!empty($table)) {
+            foreach ($table as $tableElement) {
+                $notification = false;
+                $unicode = json_decode('"\u2705"'); # white_check_mark
+                $immediateNotificationList = json_decode($this->ReadAttributeString('ImmediateNotificationList'), true);
+                $key = array_search($tableElement['name'], array_column($immediateNotificationList, 'name'));
+                //Critical condition
+                if ($tableElement['storageQuotaUsedRatio'] >= $propertyCriticalCondition) {
+                    $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
+                    if ($key === false) {
+                        $notification = true;
+                        array_push($immediateNotificationList, ['name' => $tableElement['name'], 'thresholdExceeded' => false, 'criticalCondition' => true]);
+                    }
+                    if ($key !== false) {
+                        $thresholdExceeded = $immediateNotificationList[$key]['thresholdExceeded'];
+                        $criticalCondition = $immediateNotificationList[$key]['criticalCondition'];
+                        if (!$criticalCondition) {
+                            $notification = true;
+                        }
+                        $immediateNotificationList[$key] = ['name' => $tableElement['name'], 'thresholdExceeded' => $thresholdExceeded, 'criticalCondition' => true];
+                    }
+                    if (!$this->ReadPropertyBoolean('UseImmediateNotificationLimit')) {
+                        $notification = true;
+                    }
+                    if ($notification) {
+                        $message = $unicode . ' Kritischer Zustand für ' . $tableElement['name'] . ' ' . $tableElement['storageQuotaUsedRatio'] . '% ' . $categoryName;
+                        array_push($messages, $message);
+                    }
+                }
+                //Threshold exceeded
+                if (($tableElement['storageQuotaUsedRatio'] > $propertyThresholdExceeded) && ($tableElement['storageQuotaUsedRatio'] < $propertyCriticalCondition)) {
+                    $unicode = json_decode('"\u26a0\ufe0f"'); # warning
+                    if ($key === false) {
+                        $notification = true;
+                        array_push($immediateNotificationList, ['name' => $tableElement['name'], 'thresholdExceeded' => true, 'criticalCondition' => false]);
+                    }
+                    if ($key !== false) {
+                        $thresholdExceeded = $immediateNotificationList[$key]['thresholdExceeded'];
+                        $criticalCondition = $immediateNotificationList[$key]['criticalCondition'];
+                        if (!$thresholdExceeded) {
+                            $notification = true;
+                        }
+                        $immediateNotificationList[$key] = ['name' => $tableElement['name'], 'thresholdExceeded' => true, 'criticalCondition' => $criticalCondition];
+                    }
+                    if (!$this->ReadPropertyBoolean('UseImmediateNotificationLimit')) {
+                        $notification = true;
+                    }
+                    if ($notification) {
+                        $message = $unicode . ' Schwellenwert überschritten für ' . $tableElement['name'] . ' ' . $tableElement['storageQuotaUsedRatio'] . '% ' . $categoryName;
+                        array_push($messages, $message);
+                    }
+                }
+                $string .= '<tr><td>' . $unicode . '</td><td>' . $tableElement['poolId'] . '</td><td>' . $tableElement['name'] . '</td><td>' . $tableElement['storageQuota'] . '</td><td>' . $tableElement['storageUsed'] . '</td><td>' . $tableElement['storageQuotaUsedRatio'] . '</td></tr>';
+                $this->SendDebug(__FUNCTION__, json_encode($immediateNotificationList), 0);
+                $this->WriteAttributeString('ImmediateNotificationList', json_encode($immediateNotificationList));
+            }
+        }
+        $string .= '</table>';
+        $this->SetValue($ident, $string);
+        $this->SetValue('LastUpdate', date('d.m.Y H:i:s'));
+        if (!empty($messages)) {
+            $this->SendImmediateNotification(json_encode($messages));
+        }
+        return true;
     }
 }

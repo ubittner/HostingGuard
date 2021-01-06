@@ -1,32 +1,37 @@
 <?php
 
+/** @noinspection PhpUnused */
+
 declare(strict_types=1);
 
-trait HG_hostingAPI
+trait hostingAPI
 {
     /**
-     * Lists the existing virtual machines.
+     * Gets all available virtual machines.
      *
      * @return string
      */
-    public function ListingVirtualMachines(): string
+    public function GetVirtualMachines(): string
     {
         $endpoint = 'https://secure.hosting.de/api/machine/v1/json/virtualMachinesFind';
         return $this->SendDataToHosting($endpoint, 'POST');
     }
 
     /**
-     * Lists the web spaces.
+     * Gets all available web spaces.
      *
      * @return string
      */
-    public function ListingWebSpaces(): string
+    public function GetWebSpaces(): string
     {
         $endpoint = 'https://secure.hosting.de/api/webhosting/v1/json/webspacesFind';
         return $this->SendDataToHosting($endpoint, 'POST');
     }
 
-    public function ListingDatabases(): string
+    /**
+     * Gets all available databases.
+     */
+    public function GetDatabases(): string
     {
         $endpoint = 'https://secure.hosting.de/api/database/v1/json/databasesFind';
         return $this->SendDataToHosting($endpoint, 'POST');
