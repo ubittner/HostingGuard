@@ -6,6 +6,7 @@
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">../HostingGuard</directory>
+            <directory suffix=".php">../WebSpaces</directory>
         </whitelist>
     </filter>
 </phpunit>
