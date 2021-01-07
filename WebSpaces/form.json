@@ -85,11 +85,17 @@
               "caption": "WebFront",
               "name": "ID",
               "add": 0,
-              "width": "350px",
+              "width": "100px",
               "edit": {
                 "type": "SelectModule",
                 "moduleID": "{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}"
               }
+            },
+            {
+              "caption": "Name",
+              "name": "Name",
+              "add": "",
+              "width": "200px"
             }
           ]
         },
@@ -114,11 +120,17 @@
               "caption": "WebFront",
               "name": "ID",
               "add": 0,
-              "width": "350px",
+              "width": "100px",
               "edit": {
                 "type": "SelectModule",
                 "moduleID": "{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}"
               }
+            },
+            {
+              "caption": "Name",
+              "name": "Name",
+              "add": "",
+              "width": "200px"
             }
           ]
         },
@@ -143,11 +155,17 @@
               "caption": "SMTP",
               "name": "ID",
               "add": 0,
-              "width": "350px",
+              "width": "100px",
               "edit": {
                 "type": "SelectModule",
                 "moduleID": "{375EAF21-35EF-4BC4-83B3-C780FD8BD88A}"
               }
+            },
+            {
+              "caption": "Name",
+              "name": "Name",
+              "add": "",
+              "width": "200px"
             },
             {
               "caption": "Name des Empfängers",

@@ -59,6 +59,41 @@ class HostingGuardWebSpaces extends IPSModule
         }
     }
 
+    public function GetConfigurationForm()
+    {
+        $formData = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+        $webFronts = json_decode($this->ReadPropertyString('WebFrontNotification'));
+        if (!empty($webFronts)) {
+            foreach ($webFronts as $webFront) {
+                $formData['elements'][4]['items'][0]['values'][] = [
+                    'Use'   => $webFront->Use,
+                    'ID'    => $webFront->ID,
+                    'Name'  => IPS_GetName($webFront->ID)];
+            }
+        }
+        $mobileDevices = json_decode($this->ReadPropertyString('MobileDeviceNotification'));
+        if (!empty($mobileDevices)) {
+            foreach ($mobileDevices as $mobileDevice) {
+                $formData['elements'][4]['items'][1]['values'][] = [
+                    'Use'   => $mobileDevice->Use,
+                    'ID'    => $mobileDevice->ID,
+                    'Name'  => IPS_GetName($mobileDevice->ID)];
+            }
+        }
+        $recipients = json_decode($this->ReadPropertyString('MailNotification'));
+        if (!empty($recipients)) {
+            foreach ($recipients as $recipient) {
+                $formData['elements'][4]['items'][2]['values'][] = [
+                    'Use'       => $recipient->Use,
+                    'ID'        => $recipient->ID,
+                    'Name'      => IPS_GetName($recipient->ID),
+                    'Recipient' => $recipient->Recipient,
+                    'Address'   => $recipient->Address];
+            }
+        }
+        return json_encode($formData);
+    }
+
     public function ShowStateList(): void
     {
         print_r(json_decode($this->ReadAttributeString('StateList'), true));
