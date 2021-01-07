@@ -9,9 +9,9 @@ class HostingGuardValidationTest extends TestCaseSymconValidation
         $this->validateLibrary(__DIR__ . '/..');
     }
 
-    public function testValidateHostingGuardModule(): void
+    public function testValidateDatabasesModule(): void
     {
-        $this->validateModule(__DIR__ . '/../HostingGuard');
+        $this->validateModule(__DIR__ . '/../Databases');
     }
 
     public function testValidateWebSpacesModule(): void

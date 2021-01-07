@@ -1,0 +1,14 @@
+{
+  "id": "{13281DC3-D928-E9BB-854A-7F4E69D6E903}",
+  "name": "Hosting Guard Databases",
+  "type": 3,
+  "vendor": "hosting.de",
+  "aliases": [
+    "Hosting Guard Databases"
+  ],
+  "url": "https://github.com/ubittner/HostingGuard/",
+  "parentRequirements": [],
+  "childRequirements": [],
+  "implemented": [],
+  "prefix": "HGDB"
+}
