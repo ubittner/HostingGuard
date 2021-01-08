@@ -1,8 +1,10 @@
 <?php
 
+/** @noinspection DuplicatedCode */
+
 declare(strict_types=1);
 
-trait HGWS_notification
+trait HGCA_notification
 {
     public function Notify(bool $OnlyStateChanges): bool
     {
@@ -47,10 +49,16 @@ trait HGWS_notification
                                 $notification = false;
                             }
                         }
+
+                        $date = substr($element->endDate, 0, 10);
+                        $date = strtotime($date);
+                        $date = date('d.m.Y', $date);
+                        $time = substr($element->endDate, 11, 8);
+
                         switch ($element->actualStatus) {
                             case 1:
                                 $unicode = json_decode('"\u26a0\ufe0f"'); # warning
-                                $message = $unicode . ' Schwellenwert überschritten:  WebSpace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
+                                $message = $unicode . ' Warnung: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . ' ab!';
                                 if (!$this->ReadPropertyBoolean('NotifyThresholdExceeded')) {
                                     $notification = false;
                                 }
@@ -58,7 +66,7 @@ trait HGWS_notification
 
                             case 2:
                                 $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
-                                $message = $unicode . ' Kritischer Zustand: WebSpace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
+                                $message = $unicode . ' Kritischer Zustand: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . ' ab!';
                                 if (!$this->ReadPropertyBoolean('NotifyCriticalCondition')) {
                                     $notification = false;
                                 }
@@ -66,7 +74,7 @@ trait HGWS_notification
 
                             default:
                                 $unicode = json_decode('"\u2705"'); # white_check_mark
-                                $message = $unicode . ' Status OK: WebSpace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
+                                $message = $unicode . ' Status OK: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . ' ab!';
                                 if (!$this->ReadPropertyBoolean('Notify')) {
                                     $notification = false;
                                 }
@@ -108,10 +116,14 @@ trait HGWS_notification
                                 $notification = false;
                             }
                         }
+                        $date = substr($element->endDate, 0, 10);
+                        $date = strtotime($date);
+                        $date = date('d.m.Y', $date);
+                        $time = substr($element->endDate, 11, 8);
                         switch ($element->actualStatus) {
                             case 1:
                                 $unicode = json_decode('"\u26a0\ufe0f"'); # warning
-                                $message = $unicode . ' Schwellenwert überschritten:  WebSpace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
+                                $message = $unicode . ' Warnung: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . ' ab!';
                                 $sound = 'alarm';
                                 if (!$this->ReadPropertyBoolean('NotifyThresholdExceeded')) {
                                     $notification = false;
@@ -120,7 +132,7 @@ trait HGWS_notification
 
                             case 2:
                                 $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
-                                $message = $unicode . ' Kritischer Zustand: WebSpace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
+                                $message = $unicode . ' Kritischer Zustand: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . ' ab!';
                                 $sound = 'alarm';
                                 if (!$this->ReadPropertyBoolean('NotifyCriticalCondition')) {
                                     $notification = false;
@@ -129,7 +141,7 @@ trait HGWS_notification
 
                             default:
                                 $unicode = json_decode('"\u2705"'); # white_check_mark
-                                $message = $unicode . ' Status OK: WebSpace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
+                                $message = $unicode . ' Status OK: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . ' ab!';
                                 $sound = '';
                                 if (!$this->ReadPropertyBoolean('Notify')) {
                                     $notification = false;
@@ -175,25 +187,25 @@ trait HGWS_notification
                                 }
                             }
                             $interval = $this->ReadPropertyInteger('UpdateInterval');
-                            $updateInterval = $interval . ' Minuten';
+                            $updateInterval = $interval . ' Stunden';
                             if ($interval == 1) {
-                                $updateInterval = $interval . ' Minute';
+                                $updateInterval = $interval . ' Stunde';
                             }
+                            $date = substr($element->endDate, 0, 10);
+                            $date = strtotime($date);
+                            $date = date('d.m.Y', $date);
+                            $time = substr($element->endDate, 11, 8);
                             switch ($element->actualStatus) {
                                 case 1:
                                     $unicode = json_decode('"\u26a0\ufe0f"'); # warning
-                                    $stateText = $unicode . ' Schwellenwert überschritten:  WebSpace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt!';
-                                    $storageText = 'Zugewiesener Speicher ' . $element->storageQuota . ' davon verbraucht ' . $element->storageUsed . "\n";
-                                    $storageText .= "\n";
-                                    $storageText .= "Bitte löschen Sie zeitnah temporäre Dateien und nicht mehr benötigte Daten oder\n";
-                                    $storageText .= "buchen Sie zusätzlichen Speicherplatz im Kundencenter.\n";
-                                    $storageText .= "Im Kundencenter haben Sie jederzeit Zugriff auf die Server-Ressourcen in Real-Time.\n";
-                                    $storageText .= "\n";
-                                    $storageText .= "Wir Informieren Sie, sobald:\n";
-                                    $storageText .= "- der Zustand wieder in Ordnung ist\n";
-                                    $storageText .= "- der Zustand kritisch wird\n";
-                                    $storageText .= "\n";
-                                    $storageText .= 'Es kann bis zu ' . $updateInterval . ' dauern, bis die Benachrichtigung versendet wird.';
+                                    $stateText = $unicode . ' Warnung: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . ' ab!';
+                                    $notificationText = "Zertifikate können im Kundencenter verlängert oder neu erstellt werden.\n";
+                                    $notificationText .= "\n";
+                                    $notificationText .= "Wir Informieren Sie, sobald:\n";
+                                    $notificationText .= "- der Zustand wieder in Ordnung ist oder ein neues Zertifikat ausgestellt wurde\n";
+                                    $notificationText .= "- der Zustand kritisch wird und dringender Handlungsbedarf besteht\n";
+                                    $notificationText .= "\n";
+                                    $notificationText .= 'Es kann bis zu ' . $updateInterval . ' dauern, bis die Benachrichtigung versendet wird.';
                                     if (!$this->ReadPropertyBoolean('NotifyThresholdExceeded')) {
                                         $notification = false;
                                     }
@@ -201,15 +213,13 @@ trait HGWS_notification
 
                                 case 2:
                                     $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
-                                    $stateText = $unicode . ' Kritischer Zustand: WebSpace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt!';
-                                    $storageText = 'Zugewiesener Speicher ' . $element->storageQuota . ' davon verbraucht ' . $element->storageUsed . "\n";
-                                    $storageText .= "\n";
-                                    $storageText .= "Bitte buchen Sie zusätzlichen Speicherplatz im Kundencenter, um einen Serverausfall zu vermeiden.\n";
-                                    $storageText .= "Im Kundencenter sind alle Server-Ressourcen in Real-Time einsehbar.\n";
-                                    $storageText .= "\n";
-                                    $storageText .= "Wir Informieren Sie, sobald der Zustand wieder in Ordnung ist.\n";
-                                    $storageText .= "\n";
-                                    $storageText .= 'Es kann bis zu ' . $updateInterval . ' dauern, bis die Benachrichtigung versendet wird.';
+                                    $stateText = $unicode . ' Kritischer Zustand: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . ' ab!';
+                                    $notificationText = "Zertifikate können im Kundencenter eingesehen, verlängert oder neu erstellt werden.\n";
+                                    $notificationText .= "\n";
+                                    $notificationText .= "Wir benachrichtigen Sie, sobald der Zustand wieder in Ordnung ist oder \n";
+                                    $notificationText .= "ein neues Zertifikat ausgestellt wurde.\n";
+                                    $notificationText .= "\n";
+                                    $notificationText .= 'Es kann bis zu ' . $updateInterval . ' dauern, bis die Benachrichtigung versendet wird.';
                                     if (!$this->ReadPropertyBoolean('NotifyCriticalCondition')) {
                                         $notification = false;
                                     }
@@ -217,18 +227,18 @@ trait HGWS_notification
 
                                 default:
                                     $unicode = json_decode('"\u2705"'); # white_check_mark
-                                    $stateText = $unicode . ' Status OK: WebSpace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt!';
-                                    $storageText = 'Zugewiesener Speicher ' . $element->storageQuota . ' davon verbraucht ' . $element->storageUsed;
+                                    $stateText = $unicode . ' Status OK: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . ' ab!';
+                                    $notificationText = 'Es besteht kein Handlungsbedarf!';
                                     if (!$this->ReadPropertyBoolean('Notify')) {
                                         $notification = false;
                                     }
                             }
                             if ($notification) {
-                                $subject = 'Hosting Guard WebSpace';
+                                $subject = 'Hosting Guard SSL Zertifikat';
                                 $text = "------------------------------------------------------------------------------------------------------------------------------------------\n";
                                 $text .= $stateText . "\n";
                                 $text .= "\n";
-                                $text .= $storageText . "\n";
+                                $text .= $notificationText . "\n";
                                 $text .= "------------------------------------------------------------------------------------------------------------------------------------------\n";
                                 @SMTP_SendMailEx($id, $address, $subject, $text);
                             }

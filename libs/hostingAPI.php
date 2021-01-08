@@ -38,6 +38,16 @@ trait HG_hostingAPI
         return $this->SendDataToEndpoint($endpoint, 'POST');
     }
 
+    /**
+     * Gets all available certificates.
+     * @return string
+     */
+    public function GetCertificates(): string
+    {
+        $endpoint = 'https://secure.hosting.de/api/ssl/v1/json/certificatesFind';
+        return $this->SendDataToEndpoint($endpoint, 'POST');
+    }
+
     #################### Private
 
     /**

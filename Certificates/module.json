@@ -1,14 +1,14 @@
 {
-  "id": "{02EC0C09-FD6E-05DF-D021-07BF07919214}",
-  "name": "Hosting Guard WebSpaces",
+  "id": "{65BE87CE-E5EA-9A86-E353-6703C72D7F32}",
+  "name": "Hosting Guard Certificates",
   "type": 3,
   "vendor": "hosting.de",
   "aliases": [
-    "Hosting Guard WebSpaces"
+    "Hosting Guard Certificates"
   ],
   "url": "https://github.com/ubittner/HostingGuard/",
   "parentRequirements": [],
   "childRequirements": [],
   "implemented": [],
-  "prefix": "HGWS"
+  "prefix": "HGCA"
 }

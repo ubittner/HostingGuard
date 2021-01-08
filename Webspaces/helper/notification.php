@@ -4,7 +4,7 @@
 
 declare(strict_types=1);
 
-trait HGDB_notification
+trait HGWS_notification
 {
     public function Notify(bool $OnlyStateChanges): bool
     {
@@ -52,7 +52,7 @@ trait HGDB_notification
                         switch ($element->actualStatus) {
                             case 1:
                                 $unicode = json_decode('"\u26a0\ufe0f"'); # warning
-                                $message = $unicode . ' Schwellenwert überschritten: Datenbank ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
+                                $message = $unicode . ' Schwellenwert überschritten: Webspace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
                                 if (!$this->ReadPropertyBoolean('NotifyThresholdExceeded')) {
                                     $notification = false;
                                 }
@@ -60,7 +60,7 @@ trait HGDB_notification
 
                             case 2:
                                 $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
-                                $message = $unicode . ' Kritischer Zustand: Datenbank ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
+                                $message = $unicode . ' Kritischer Zustand: Webspace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
                                 if (!$this->ReadPropertyBoolean('NotifyCriticalCondition')) {
                                     $notification = false;
                                 }
@@ -68,7 +68,7 @@ trait HGDB_notification
 
                             default:
                                 $unicode = json_decode('"\u2705"'); # white_check_mark
-                                $message = $unicode . ' Status OK: Datenbank ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
+                                $message = $unicode . ' Status OK: Webspace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
                                 if (!$this->ReadPropertyBoolean('Notify')) {
                                     $notification = false;
                                 }
@@ -113,7 +113,7 @@ trait HGDB_notification
                         switch ($element->actualStatus) {
                             case 1:
                                 $unicode = json_decode('"\u26a0\ufe0f"'); # warning
-                                $message = $unicode . ' Schwellenwert überschritten: Datenbank ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
+                                $message = $unicode . ' Schwellenwert überschritten: Webspace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
                                 $sound = 'alarm';
                                 if (!$this->ReadPropertyBoolean('NotifyThresholdExceeded')) {
                                     $notification = false;
@@ -122,7 +122,7 @@ trait HGDB_notification
 
                             case 2:
                                 $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
-                                $message = $unicode . ' Kritischer Zustand: Datenbank ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
+                                $message = $unicode . ' Kritischer Zustand: Webspace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
                                 $sound = 'alarm';
                                 if (!$this->ReadPropertyBoolean('NotifyCriticalCondition')) {
                                     $notification = false;
@@ -131,7 +131,7 @@ trait HGDB_notification
 
                             default:
                                 $unicode = json_decode('"\u2705"'); # white_check_mark
-                                $message = $unicode . ' Status OK: Datenbank ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
+                                $message = $unicode . ' Status OK: Webspace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt! (' . $element->timestamp . ')';
                                 $sound = '';
                                 if (!$this->ReadPropertyBoolean('Notify')) {
                                     $notification = false;
@@ -184,7 +184,7 @@ trait HGDB_notification
                             switch ($element->actualStatus) {
                                 case 1:
                                     $unicode = json_decode('"\u26a0\ufe0f"'); # warning
-                                    $stateText = $unicode . ' Schwellenwert überschritten: Datenbank ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt!';
+                                    $stateText = $unicode . ' Schwellenwert überschritten: Webspace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt!';
                                     $storageText = 'Zugewiesener Speicher ' . $element->storageQuota . ' davon verbraucht ' . $element->storageUsed . "\n";
                                     $storageText .= "\n";
                                     $storageText .= "Bitte löschen Sie zeitnah temporäre Dateien und nicht mehr benötigte Daten oder\n";
@@ -203,7 +203,7 @@ trait HGDB_notification
 
                                 case 2:
                                     $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
-                                    $stateText = $unicode . ' Kritischer Zustand: Datenbank ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt!';
+                                    $stateText = $unicode . ' Kritischer Zustand: Webspace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt!';
                                     $storageText = 'Zugewiesener Speicher ' . $element->storageQuota . ' davon verbraucht ' . $element->storageUsed . "\n";
                                     $storageText .= "\n";
                                     $storageText .= "Bitte buchen Sie zusätzlichen Speicherplatz im Kundencenter, um einen Serverausfall zu vermeiden.\n";
@@ -219,14 +219,14 @@ trait HGDB_notification
 
                                 default:
                                     $unicode = json_decode('"\u2705"'); # white_check_mark
-                                    $stateText = $unicode . ' Status OK: Datenbank ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt!';
+                                    $stateText = $unicode . ' Status OK: Webspace ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt!';
                                     $storageText = 'Zugewiesener Speicher ' . $element->storageQuota . ' davon verbraucht ' . $element->storageUsed;
                                     if (!$this->ReadPropertyBoolean('Notify')) {
                                         $notification = false;
                                     }
                             }
                             if ($notification) {
-                                $subject = 'Hosting Guard Datenbank';
+                                $subject = 'Hosting Guard WebSpace';
                                 $text = "------------------------------------------------------------------------------------------------------------------------------------------\n";
                                 $text .= $stateText . "\n";
                                 $text .= "\n";

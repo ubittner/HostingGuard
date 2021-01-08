@@ -1,14 +1,14 @@
 {
-  "id": "{B431E743-166F-1742-B2E9-17EE1FF4F6D2}",
-  "name": "Hosting Guard",
+  "id": "{02EC0C09-FD6E-05DF-D021-07BF07919214}",
+  "name": "Hosting Guard Webspaces",
   "type": 3,
   "vendor": "hosting.de",
   "aliases": [
-    "Hosting Guard"
+    "Hosting Guard Webspaces"
   ],
   "url": "https://github.com/ubittner/HostingGuard/",
   "parentRequirements": [],
   "childRequirements": [],
   "implemented": [],
-  "prefix": "HG"
+  "prefix": "HGWS"
 }

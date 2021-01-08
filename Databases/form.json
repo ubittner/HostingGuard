@@ -192,19 +192,46 @@
           "caption": "Sofortige Benachrichtigung bei Statusänderung"
         },
         {
-          "type": "CheckBox",
-          "name": "Notify",
-          "caption": "\u2705 OK"
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "Notify",
+              "caption": "\u2705"
+            },
+            {
+              "type": "Label",
+              "caption": "OK"
+            }
+          ]
         },
         {
-          "type": "CheckBox",
-          "name": "NotifyThresholdExceeded",
-          "caption": "\u26a0\ufe0f Schwellenwert überschritten"
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "NotifyThresholdExceeded",
+              "caption": "\u26a0\ufe0f"
+            },
+            {
+              "type": "Label",
+              "caption": "Schwellenwert überschritten"
+            }
+          ]
         },
         {
-          "type": "CheckBox",
-          "name": "NotifyCriticalCondition",
-          "caption": "\u2757 Kritischer Zustand"
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "NotifyCriticalCondition",
+              "caption": "\u2757"
+            },
+            {
+              "type": "Label",
+              "caption": "Kritischer Zustand"
+            }
+          ]
         },
         {
           "type": "CheckBox",

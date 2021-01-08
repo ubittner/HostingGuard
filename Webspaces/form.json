@@ -10,16 +10,11 @@
     },
     {
       "type": "ExpansionPanel",
-      "caption": "API",
+      "caption": "Anmeldedaten",
       "items": [
         {
-          "type": "CheckBox",
-          "name": "MaintenanceMode",
-          "caption": "Wartungsmodus"
-        },
-        {
           "type": "PasswordTextBox",
-          "name": "API_Key",
+          "name": "ApiKey",
           "caption": "API Key",
           "width": "600px",
           "multiline": true
@@ -31,6 +26,33 @@
           "suffix": "Millisekunden"
         },
         {
+          "type": "CheckBox",
+          "name": "MaintenanceMode",
+          "caption": "Wartungsmodus"
+        }
+      ]
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Schwellenwerte",
+      "items": [
+        {
+          "type": "NumberSpinner",
+          "name": "ThresholdExceeded",
+          "caption": "\u26a0\ufe0f Schwellenwert überschritten",
+          "suffix": "%",
+          "minimum": 0,
+          "maximum": 100
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "CriticalCondition",
+          "caption": "\u2757 Kritischer Zustand",
+          "suffix": "%",
+          "minimum": 0,
+          "maximum": 100
+        },
+        {
           "type": "NumberSpinner",
           "name": "UpdateInterval",
           "caption": "Aktualisierungsintervall",
@@ -40,70 +62,12 @@
     },
     {
       "type": "ExpansionPanel",
-      "caption": "Schwellenwerte",
-      "items": [
-        {
-          "type": "Label",
-          "caption": "WebSpace"
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "WebSpaceThresholdExceeded",
-          "caption": "\u26a0\ufe0f Schwellenwert überschritten",
-          "suffix": "%",
-          "minimum": 0,
-          "maximum": 100
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "WebSpaceCriticalCondition",
-          "caption": "\u2757 Kritischer Zustand",
-          "suffix": "%",
-          "minimum": 0,
-          "maximum": 100
-        },
-        {
-          "type": "Label",
-          "caption": "\nDatabase"
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "DatabaseThresholdExceeded",
-          "caption": "\u26a0\ufe0f Schwellenwert überschritten",
-          "suffix": "%",
-          "minimum": 0,
-          "maximum": 100
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "DatabaseCriticalCondition",
-          "caption": "\u2757 Kritischer Zustand",
-          "suffix": "%",
-          "minimum": 0,
-          "maximum": 100
-        }
-      ]
-    },
-    {
-      "type": "ExpansionPanel",
       "caption": "Benachrichtigungen",
       "items": [
         {
-          "type": "SelectModule",
-          "name": "WebFront",
-          "caption": "Push (WebFront)",
-          "moduleID": "{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}"
-        },
-        {
-          "type": "SelectModule",
-          "name": "SMTP",
-          "caption": "E-Mail (SMTP)",
-          "moduleID": "{375EAF21-35EF-4BC4-83B3-C780FD8BD88A}"
-        },
-        {
           "type": "List",
-          "name": "MailRecipients",
-          "caption": "E-Mail Empfänger",
+          "name": "WebFrontNotification",
+          "caption": "WebFront",
           "rowCount": 5,
           "add": true,
           "delete": true,
@@ -118,8 +82,94 @@
               }
             },
             {
-              "caption": "Empfänger",
+              "caption": "WebFront",
+              "name": "ID",
+              "add": 0,
+              "width": "100px",
+              "edit": {
+                "type": "SelectModule",
+                "moduleID": "{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}"
+              }
+            },
+            {
+              "caption": "Name",
               "name": "Name",
+              "add": "",
+              "width": "200px"
+            }
+          ]
+        },
+        {
+          "type": "List",
+          "name": "MobileDeviceNotification",
+          "caption": "Mobile Geräte",
+          "rowCount": 5,
+          "add": true,
+          "delete": true,
+          "columns": [
+            {
+              "caption": "Aktiviert",
+              "name": "Use",
+              "width": "100px",
+              "add": true,
+              "edit": {
+                "type": "CheckBox"
+              }
+            },
+            {
+              "caption": "WebFront",
+              "name": "ID",
+              "add": 0,
+              "width": "100px",
+              "edit": {
+                "type": "SelectModule",
+                "moduleID": "{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}"
+              }
+            },
+            {
+              "caption": "Name",
+              "name": "Name",
+              "add": "",
+              "width": "200px"
+            }
+          ]
+        },
+        {
+          "type": "List",
+          "name": "MailNotification",
+          "caption": "E-Mail",
+          "rowCount": 5,
+          "add": true,
+          "delete": true,
+          "columns": [
+            {
+              "caption": "Aktiviert",
+              "name": "Use",
+              "width": "100px",
+              "add": true,
+              "edit": {
+                "type": "CheckBox"
+              }
+            },
+            {
+              "caption": "SMTP",
+              "name": "ID",
+              "add": 0,
+              "width": "100px",
+              "edit": {
+                "type": "SelectModule",
+                "moduleID": "{375EAF21-35EF-4BC4-83B3-C780FD8BD88A}"
+              }
+            },
+            {
+              "caption": "Name",
+              "name": "Name",
+              "add": "",
+              "width": "200px"
+            },
+            {
+              "caption": "Name des Empfängers",
+              "name": "Recipient",
               "width": "350px",
               "add": "",
               "edit": {
@@ -139,46 +189,69 @@
         },
         {
           "type": "Label",
-          "caption": "Sofortige Benachrichtigung"
-        },
-        {
-          "type": "CheckBox",
-          "name": "UseImmediateNotificationThresholdExceeded",
-          "caption": "\u26a0\ufe0f Schwellenwert überschritten"
-        },
-        {
-          "type": "CheckBox",
-          "name": "UseImmediateNotificationCriticalCondition",
-          "caption": "\u2757 Kritischer Zustand"
+          "caption": "Sofortige Benachrichtigung bei Statusänderung"
         },
         {
           "type": "RowLayout",
           "items": [
             {
               "type": "CheckBox",
-              "name": "UseImmediateNotificationLimit",
-              "caption": "Maximal eine Benachrichtigung bis"
+              "name": "Notify",
+              "caption": "\u2705"
             },
             {
               "type": "Label",
-              "caption": " "
+              "caption": "OK"
+            }
+          ]
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "NotifyThresholdExceeded",
+              "caption": "\u26a0\ufe0f"
             },
             {
-              "type": "SelectTime",
-              "name": "ResetImmediateNotificationLimitTime",
-              "caption": "Uhrzeit"
+              "type": "Label",
+              "caption": "Schwellenwert überschritten"
+            }
+          ]
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "NotifyCriticalCondition",
+              "caption": "\u2757"
+            },
+            {
+              "type": "Label",
+              "caption": "Kritischer Zustand"
             }
           ]
         },
         {
           "type": "CheckBox",
-          "name": "UseImmediateNotificationPush",
-          "caption": "Push"
+          "name": "UseWebFrontNotification",
+          "caption": "WebFront"
         },
         {
           "type": "CheckBox",
-          "name": "UseImmediateNotificationMail",
+          "name": "UseMobileDeviceNotification",
+          "caption": "Mobile Geräte"
+        },
+        {
+          "type": "CheckBox",
+          "name": "UseMailNotification",
           "caption": "E-Mail"
+        },
+        {
+          "type": "SelectTime",
+          "name": "ResetStateListTime",
+          "caption": "Benachrichtigung zurücksetzen"
         }
       ]
     }
@@ -186,27 +259,32 @@
   "actions": [
     {
       "type": "ExpansionPanel",
-      "caption": "Entwicklerbereich API",
+      "caption": "Entwicklerbereich",
       "items": [
         {
           "type": "Button",
-          "caption": "Get Virtual Machines",
-          "onClick": "echo $data = HG_GetVirtualMachines($id); print_r($data);"
+          "caption": "Webspaces anzeigen",
+          "onClick": "$data = HGWS_GetWebSpaces($id); if (empty($data)) {echo 'Es ist ein Fehler aufgetreten!';} else {print_r($data);}"
         },
         {
           "type": "Button",
-          "caption": "Get Web Spaces",
-          "onClick": "echo $data = HG_GetWebSpaces($id); print_r($data);"
+          "caption": "Daten aktualisieren",
+          "onClick": "$result = HGWS_UpdateData($id, false); if ($result) {echo 'Die Daten wurden aktualisiert!';} else {echo 'Es ist ein Fehler aufgetreten!';}"
         },
         {
           "type": "Button",
-          "caption": "Get Databases",
-          "onClick": "echo $data = HG_GetDatabases($id); print_r($data);"
+          "caption": "Benachrichtigungen versenden",
+          "onClick": "$result = HGWS_Notify($id, false); if ($result) {echo 'Die Benachrichtigungen wurden versendet!';} else {echo 'Es ist ein Fehler aufgetreten!';}"
         },
         {
           "type": "Button",
-          "caption": "Update Data",
-          "onClick": "HG_UpdateData($id);"
+          "caption": "Statusliste anzeigen",
+          "onClick": "HGWS_ShowStateList($id);"
+        },
+        {
+          "type": "Button",
+          "caption": "Statusliste zurücksetzen",
+          "onClick": "HGWS_ResetStateList($id); echo 'Die Statusliste wurde zurückgesetzt!';"
         }
       ]
     }
@@ -215,22 +293,22 @@
     {
       "code": 101,
       "icon": "active",
-      "caption": "Hosting Guard wird erstellt"
+      "caption": "Hosting Guard Webspaces wird erstellt"
     },
     {
       "code": 102,
       "icon": "active",
-      "caption": "Hosting Guard ist aktiv"
+      "caption": "Hosting Guard Webspaces ist aktiv"
     },
     {
       "code": 103,
       "icon": "active",
-      "caption": "Hosting Guard wird gelöscht"
+      "caption": "Hosting Guard Webspaces wird gelöscht"
     },
     {
       "code": 104,
       "icon": "inactive",
-      "caption": "Hosting Guard ist inaktiv"
+      "caption": "Hosting Guard Webspaces ist inaktiv"
     },
     {
       "code": 200,

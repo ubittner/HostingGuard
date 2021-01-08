@@ -5,8 +5,9 @@
     </php>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">../Certificates</directory>
             <directory suffix=".php">../Databases</directory>
-            <directory suffix=".php">../WebSpaces</directory>
+            <directory suffix=".php">../Webspaces</directory>
         </whitelist>
     </filter>
 </phpunit>

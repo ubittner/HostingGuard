@@ -8,11 +8,11 @@ declare(strict_types=1);
 include_once __DIR__ . '/../libs/hostingAPI.php';
 include_once __DIR__ . '/helper/autoload.php';
 
-class HostingGuardWebSpaces extends IPSModule
+class HostingGuardCertificates extends IPSModule
 {
     //Helper
     use HG_hostingAPI;
-    use HGWS_notification;
+    use HGCA_notification;
 
     public function Create()
     {
@@ -112,64 +112,85 @@ class HostingGuardWebSpaces extends IPSModule
         if ($this->GetStatus() != 102) {
             return false;
         }
-        $this->SetTimerInterval('UpdateData', $this->ReadPropertyInteger('UpdateInterval') * 1000 * 60);
+        $this->SetTimerInterval('UpdateData', $this->ReadPropertyInteger('UpdateInterval') * 60 * 60 * 1000);
         $stateList = json_decode($this->ReadAttributeString('StateList'), true);
-        $webSpaces = json_decode($this->GetWebSpaces(), true);
+        $certificates = json_decode($this->GetCertificates(), true);
         $timestamp = (string) date('d.m.Y, H:i:s');
-        if (array_key_exists('response', $webSpaces)) {
-            $response = $webSpaces['response'];
+        if (array_key_exists('response', $certificates)) {
+            $response = $certificates['response'];
             if (array_key_exists('data', $response)) {
                 $data = $response['data'];
                 if (!empty($data)) {
                     foreach ($data as $dataElement) {
-                        //poolId
-                        $poolID = '';
-                        if (array_key_exists('poolId', $dataElement)) {
-                            $poolID = $dataElement['poolId'];
+                        //commonName
+                        $commonName = '-';
+                        if (array_key_exists('commonName', $dataElement)) {
+                            $commonName = (string) $dataElement['commonName'];
                         }
-                        //name
-                        $name = '-';
-                        if (array_key_exists('name', $dataElement)) {
-                            $name = $dataElement['name'];
+                        //status
+                        $certificateStatus = '';
+                        if (array_key_exists('status', $dataElement)) {
+                            $certificateStatus = (string) $dataElement['status'];
                         }
-                        //storageQuota
-                        $storageQuota = intval(0);
-                        if (array_key_exists('storageQuota', $dataElement)) {
-                            $storageQuota = intval($dataElement['storageQuota']);
+                        //endDate
+                        $endDate = '';
+                        if (array_key_exists('endDate', $dataElement)) {
+                            $endDate = (string) $dataElement['endDate'];
                         }
-                        //storageUsed
-                        $storageUsed = intval(0);
-                        if (array_key_exists('storageUsed', $dataElement)) {
-                            $storageUsed = intval($dataElement['storageUsed']);
+                        //product
+                        $product = '';
+                        if (array_key_exists('product', $dataElement)) {
+                            $product = (string) $dataElement['product'];
                         }
-                        //storageQuotaUsedRatio
-                        $storageQuotaUsedRatio = floatval(0);
-                        if (array_key_exists('storageQuotaUsedRatio', $dataElement)) {
-                            $storageQuotaUsedRatio = floatval($dataElement['storageQuotaUsedRatio']);
+                        //autoRenew
+                        $autoRenew = '';
+                        if (array_key_exists('autoRenew', $dataElement)) {
+                            $autoRenew = json_encode(boolval($dataElement['autoRenew']));
                         }
-                        if ($name != '-') {
+                        //orderStatus
+                        $orderStatus = '';
+                        if (array_key_exists('orderStatus', $dataElement)) {
+                            $orderStatus = (string) $dataElement['orderStatus'];
+                        }
+                        if ($commonName != '-') {
+                            $daysLeft = '';
+                            if (!empty($endDate)) {
+                                $today = new DateTime(date('Y-m-d'));
+                                $target = new DateTime(substr($endDate, 0, 10));
+                                $interval = $today->diff($target);
+                                $daysLeft = $interval->format('%R%a');
+                            }
                             $status = 0;
                             $statusChanged = false;
-                            if (($storageQuotaUsedRatio > floatval($this->ReadPropertyInteger('ThresholdExceeded'))) && ($storageQuotaUsedRatio < floatval($this->ReadPropertyInteger('CriticalCondition')))) {
-                                $status = 1;
-                                $statusChanged = true;
+                            if (!empty($daysLeft)) {
+                                if ((int) $daysLeft == $daysLeft && (int) $daysLeft > 0) {
+                                    if (((int) $daysLeft < intval($this->ReadPropertyInteger('ThresholdExceeded'))) && ((int) $daysLeft > intval($this->ReadPropertyInteger('CriticalCondition')))) {
+                                        $status = 1;
+                                        $statusChanged = true;
+                                    }
+                                    if ((int) $daysLeft <= $this->ReadPropertyInteger('CriticalCondition')) {
+                                        $status = 2;
+                                        $statusChanged = true;
+                                    }
+                                } else {
+                                    $status = 2;
+                                    $statusChanged = true;
+                                }
                             }
-                            if ($storageQuotaUsedRatio >= $this->ReadPropertyInteger('CriticalCondition')) {
-                                $status = 2;
-                                $statusChanged = true;
-                            }
-                            $key = array_search($name, array_column($stateList, 'name'));
+                            $key = array_search($commonName, array_column($stateList, 'commonName'));
                             if ($key === false) {
                                 array_push($stateList, [
-                                    'poolId'                => $poolID,
-                                    'name'                  => $name,
-                                    'storageQuota'          => $storageQuota,
-                                    'storageUsed'           => $storageUsed,
-                                    'storageQuotaUsedRatio' => $storageQuotaUsedRatio,
-                                    'actualStatus'          => $status,
-                                    'lastStatus'            => $status,
-                                    'statusChanged'         => $statusChanged,
-                                    'timestamp'             => (string) date('d.m.Y, H:i:s')]);
+                                    'commonName'        => $commonName,
+                                    'certificateStatus' => $certificateStatus,
+                                    'endDate'           => $endDate,
+                                    'daysLeft'          => $daysLeft,
+                                    'product'           => $product,
+                                    'autoRenew'         => $autoRenew,
+                                    'orderStatus'       => $orderStatus,
+                                    'actualStatus'      => $status,
+                                    'lastStatus'        => $status,
+                                    'statusChanged'     => $statusChanged,
+                                    'timestamp'         => (string) date('d.m.Y, H:i:s')]);
                             }
                             if ($key !== false) {
                                 $lastStatus = $stateList[$key]['actualStatus'];
@@ -178,15 +199,17 @@ class HostingGuardWebSpaces extends IPSModule
                                     $statusChanged = true;
                                 }
                                 $stateList[$key] = [
-                                    'poolId'                => $poolID,
-                                    'name'                  => $name,
-                                    'storageQuota'          => $storageQuota,
-                                    'storageUsed'           => $storageUsed,
-                                    'storageQuotaUsedRatio' => $storageQuotaUsedRatio,
-                                    'actualStatus'          => $status,
-                                    'lastStatus'            => $lastStatus,
-                                    'statusChanged'         => $statusChanged,
-                                    'timestamp'             => $timestamp];
+                                    'commonName'        => $commonName,
+                                    'certificateStatus' => $certificateStatus,
+                                    'endDate'           => $endDate,
+                                    'daysLeft'          => $daysLeft,
+                                    'product'           => $product,
+                                    'autoRenew'         => $autoRenew,
+                                    'orderStatus'       => $orderStatus,
+                                    'actualStatus'      => $status,
+                                    'lastStatus'        => $lastStatus,
+                                    'statusChanged'     => $statusChanged,
+                                    'timestamp'         => $timestamp];
                             }
                             $this->WriteAttributeString('StateList', json_encode($stateList));
                         }
@@ -195,7 +218,7 @@ class HostingGuardWebSpaces extends IPSModule
             }
         }
         $string = "<table style='width: 100%; border-collapse: collapse;'>";
-        $string .= '<tr><td><b>Status</b></td><td><b>poolId</b></td><td><b>name</b></td><td><b>storageQuota</b></td><td><b>storageUsed</b></td><td><b>storageQuotaUsedRatio</b></td><td><b>letzte Aktualisierung</b></td></tr>';
+        $string .= '<tr><td><b>Status</b></td><td><b>commonName</b></td><td><b>certificateStatus</b></td><td><b>endDate</b></td><td><b>daysLeft</b></td><td><b>product</b></td><td><b>autoRenew</b></td><td><b>orderStatus</b></td><td><b>letzte Aktualisierung</b></td></tr>';
         $stateList = json_decode($this->ReadAttributeString('StateList'), true);
         if (!empty($stateList)) {
             foreach ($stateList as $key => $element) {
@@ -212,7 +235,7 @@ class HostingGuardWebSpaces extends IPSModule
                     default:
                         $unicode = json_decode('"\u2705"'); # white_check_mark
                 }
-                $string .= '<tr><td>' . $unicode . '</td><td>' . $element['poolId'] . '</td><td>' . $element['name'] . '</td><td>' . $element['storageQuota'] . '</td><td>' . $element['storageUsed'] . '</td><td>' . $element['storageQuotaUsedRatio'] . ' %</td><td>' . $timestamp . '</td></tr>';
+                $string .= '<tr><td>' . $unicode . '</td><td>' . $element['commonName'] . '</td><td>' . $element['certificateStatus'] . '</td><td>' . $element['endDate'] . '</td><td>' . $element['daysLeft'] . '</td><td>' . $element['product'] . '</td><td>' . $element['autoRenew'] . '</td><td>' . $element['orderStatus'] . '</td><td>' . $timestamp . '</td></tr>';
             }
         }
         $string .= '</table>';
@@ -235,9 +258,9 @@ class HostingGuardWebSpaces extends IPSModule
         $this->RegisterPropertyString('ApiKey', '');
         $this->RegisterPropertyInteger('Timeout', 5000);
         $this->RegisterPropertyBoolean('MaintenanceMode', false);
-        $this->RegisterPropertyInteger('ThresholdExceeded', 80);
-        $this->RegisterPropertyInteger('CriticalCondition', 90);
-        $this->RegisterPropertyInteger('UpdateInterval', 10);
+        $this->RegisterPropertyInteger('ThresholdExceeded', 45);
+        $this->RegisterPropertyInteger('CriticalCondition', 20);
+        $this->RegisterPropertyInteger('UpdateInterval', 6);
         $this->RegisterPropertyString('WebFrontNotification', '[]');
         $this->RegisterPropertyString('MobileDeviceNotification', '[]');
         $this->RegisterPropertyString('MailNotification', '[]');
@@ -253,16 +276,16 @@ class HostingGuardWebSpaces extends IPSModule
     private function RegisterVariables(): void
     {
         $id = @$this->GetIDForIdent('StateList');
-        $this->RegisterVariableString('StateList', 'Web Spaces', 'HTMLBox', 10);
+        $this->RegisterVariableString('StateList', 'SSL Zertifikate', 'HTMLBox', 10);
         if ($id == false) {
-            IPS_SetIcon($this->GetIDForIdent('StateList'), 'Cloud');
+            IPS_SetIcon($this->GetIDForIdent('StateList'), 'Key');
         }
     }
 
     private function RegisterTimers(): void
     {
-        $this->RegisterTimer('UpdateData', 0, 'HGWS_UpdateData(' . $this->InstanceID . ', true);');
-        $this->RegisterTimer('ResetStateList', 0, 'HGWS_ResetStateList(' . $this->InstanceID . ');');
+        $this->RegisterTimer('UpdateData', 0, 'HGCA_UpdateData(' . $this->InstanceID . ', true);');
+        $this->RegisterTimer('ResetStateList', 0, 'HGCA_ResetStateList(' . $this->InstanceID . ');');
     }
 
     private function DisableTimers(): void
