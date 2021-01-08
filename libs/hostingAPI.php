@@ -66,7 +66,7 @@ trait HG_hostingAPI
         if (empty($apiKey)) {
             return $body;
         }
-        $postfields = json_encode(['authToken' => $apiKey]);
+        $postfields = json_encode(['authToken' => $apiKey, 'limit' => 100]);
         $timeout = round($this->ReadPropertyInteger('Timeout') / 1000);
         //Send data to endpoint
         $ch = curl_init();
@@ -88,6 +88,26 @@ trait HG_hostingAPI
                     $body = substr($response, $header_size);
                     $this->SendDebug(__FUNCTION__, 'Header: ' . $header, 0);
                     $this->SendDebug(__FUNCTION__, 'Body: ' . $body, 0);
+                    //Check for errors
+                    $errorCode = 0;
+                    $errorText = 'Es ist ein Fehler aufgetreten!';
+                    $errors = json_decode($body, true);
+                    if (array_key_exists('errors', $errors)) {
+                        $errors = $errors['errors'];
+                        if (!empty($errors)) {
+                            foreach ($errors as $error) {
+                                if (array_key_exists('code', $error)) {
+                                    $errorCode = $error['code'];
+                                }
+                                if (array_key_exists('text', $error)) {
+                                    $errorText = $error['text'];
+                                }
+                            }
+                            $message = 'Hosting Guard ID ' . $this->InstanceID . ', Fehler: ' . $errorCode . ', ' . $errorText;
+                            $this->SendDebug(__FUNCTION__, $message, 0);
+                            $this->LogMessage($message, KL_ERROR);
+                        }
+                    }
                     break;
 
                 default:

@@ -185,7 +185,7 @@ trait HGDB_notification
                                 case 1:
                                     $unicode = json_decode('"\u26a0\ufe0f"'); # warning
                                     $stateText = $unicode . ' Schwellenwert überschritten: Datenbank ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt!';
-                                    $storageText = 'Zugewiesener Speicher ' . $element->storageQuota . ' davon verbraucht ' . $element->storageUsed . "\n";
+                                    $storageText = 'Zugewiesener Speicher ' . $element->storageQuota . ' MB, davon verbraucht ' . $element->storageUsed . " MB\n";
                                     $storageText .= "\n";
                                     $storageText .= "Bitte löschen Sie zeitnah temporäre Dateien und nicht mehr benötigte Daten oder\n";
                                     $storageText .= "buchen Sie zusätzlichen Speicherplatz im Kundencenter.\n";
@@ -204,7 +204,7 @@ trait HGDB_notification
                                 case 2:
                                     $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
                                     $stateText = $unicode . ' Kritischer Zustand: Datenbank ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt!';
-                                    $storageText = 'Zugewiesener Speicher ' . $element->storageQuota . ' davon verbraucht ' . $element->storageUsed . "\n";
+                                    $storageText = 'Zugewiesener Speicher ' . $element->storageQuota . ' MB, davon verbraucht ' . $element->storageUsed . " MB\n";
                                     $storageText .= "\n";
                                     $storageText .= "Bitte buchen Sie zusätzlichen Speicherplatz im Kundencenter, um einen Serverausfall zu vermeiden.\n";
                                     $storageText .= "Im Kundencenter sind alle Server-Ressourcen in Real-Time einsehbar.\n";
@@ -220,7 +220,7 @@ trait HGDB_notification
                                 default:
                                     $unicode = json_decode('"\u2705"'); # white_check_mark
                                     $stateText = $unicode . ' Status OK: Datenbank ' . $element->name . ' ' . $element->storageQuotaUsedRatio . '% Speicherplatz belegt!';
-                                    $storageText = 'Zugewiesener Speicher ' . $element->storageQuota . ' davon verbraucht ' . $element->storageUsed;
+                                    $storageText = 'Zugewiesener Speicher ' . $element->storageQuota . ' MB, davon verbraucht ' . $element->storageUsed . ' MB';
                                     if (!$this->ReadPropertyBoolean('Notify')) {
                                         $notification = false;
                                     }

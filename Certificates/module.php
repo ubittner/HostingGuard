@@ -218,7 +218,7 @@ class HostingGuardCertificates extends IPSModule
             }
         }
         $string = "<table style='width: 100%; border-collapse: collapse;'>";
-        $string .= '<tr><td><b>Status</b></td><td><b>commonName</b></td><td><b>certificateStatus</b></td><td><b>endDate</b></td><td><b>daysLeft</b></td><td><b>product</b></td><td><b>autoRenew</b></td><td><b>orderStatus</b></td><td><b>letzte Aktualisierung</b></td></tr>';
+        $string .= '<tr><td><b>Status</b></td><td><b>Name</b></td><td><b>Zertifikatsstatus</b></td><td><b>Gültigigkeit</b></td><td><b>Tage</b></td><td><b>Produkt</b></td><td><b>Automatische Verlängerung</b></td><td><b>Auftragsstatus</b></td><td><b>Letzte Aktualisierung</b></td></tr>';
         $stateList = json_decode($this->ReadAttributeString('StateList'), true);
         if (!empty($stateList)) {
             foreach ($stateList as $key => $element) {

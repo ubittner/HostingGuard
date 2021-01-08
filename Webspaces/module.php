@@ -122,11 +122,6 @@ class HostingGuardWebspaces extends IPSModule
                 $data = $response['data'];
                 if (!empty($data)) {
                     foreach ($data as $dataElement) {
-                        //poolId
-                        $poolID = '';
-                        if (array_key_exists('poolId', $dataElement)) {
-                            $poolID = $dataElement['poolId'];
-                        }
                         //name
                         $name = '-';
                         if (array_key_exists('name', $dataElement)) {
@@ -161,7 +156,6 @@ class HostingGuardWebspaces extends IPSModule
                             $key = array_search($name, array_column($stateList, 'name'));
                             if ($key === false) {
                                 array_push($stateList, [
-                                    'poolId'                => $poolID,
                                     'name'                  => $name,
                                     'storageQuota'          => $storageQuota,
                                     'storageUsed'           => $storageUsed,
@@ -178,7 +172,6 @@ class HostingGuardWebspaces extends IPSModule
                                     $statusChanged = true;
                                 }
                                 $stateList[$key] = [
-                                    'poolId'                => $poolID,
                                     'name'                  => $name,
                                     'storageQuota'          => $storageQuota,
                                     'storageUsed'           => $storageUsed,
@@ -195,7 +188,7 @@ class HostingGuardWebspaces extends IPSModule
             }
         }
         $string = "<table style='width: 100%; border-collapse: collapse;'>";
-        $string .= '<tr><td><b>Status</b></td><td><b>poolId</b></td><td><b>name</b></td><td><b>storageQuota</b></td><td><b>storageUsed</b></td><td><b>storageQuotaUsedRatio</b></td><td><b>letzte Aktualisierung</b></td></tr>';
+        $string .= '<tr><td><b>Status</b></td><td><b>Name</b></td><td><b>Zugewiesener Speicher</b></td><td><b>Verbrauchter Speicher</b></td><td><b>Belegter Speicher</b></td><td><b>Letzte Aktualisierung</b></td></tr>';
         $stateList = json_decode($this->ReadAttributeString('StateList'), true);
         if (!empty($stateList)) {
             foreach ($stateList as $key => $element) {
@@ -212,7 +205,7 @@ class HostingGuardWebspaces extends IPSModule
                     default:
                         $unicode = json_decode('"\u2705"'); # white_check_mark
                 }
-                $string .= '<tr><td>' . $unicode . '</td><td>' . $element['poolId'] . '</td><td>' . $element['name'] . '</td><td>' . $element['storageQuota'] . '</td><td>' . $element['storageUsed'] . '</td><td>' . $element['storageQuotaUsedRatio'] . ' %</td><td>' . $timestamp . '</td></tr>';
+                $string .= '<tr><td>' . $unicode . '</td><td>' . $element['name'] . '</td><td>' . $element['storageQuota'] . ' MB</td><td>' . $element['storageUsed'] . ' MB</td><td>' . $element['storageQuotaUsedRatio'] . ' %</td><td>' . $timestamp . '</td></tr>';
             }
         }
         $string .= '</table>';
