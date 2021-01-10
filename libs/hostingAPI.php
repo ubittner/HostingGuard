@@ -116,6 +116,7 @@ trait HG_hostingAPI
         } else {
             $error_msg = curl_error($ch);
             $this->SendDebug(__FUNCTION__, 'An error has occurred: ' . json_encode($error_msg), 0);
+            $this->LogMessage('An error has occurred: ' . json_encode($error_msg), KL_ERROR);
         }
         curl_close($ch);
         return $body;

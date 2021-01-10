@@ -102,6 +102,7 @@ class HostingGuardCertificates extends IPSModule
     public function ResetStateList(): void
     {
         $this->WriteAttributeString('StateList', '[]');
+        $this->UpdateData(true);
     }
 
     public function UpdateData(bool $UseNotification): bool
@@ -115,6 +116,9 @@ class HostingGuardCertificates extends IPSModule
         $this->SetTimerInterval('UpdateData', $this->ReadPropertyInteger('UpdateInterval') * 60 * 60 * 1000);
         $stateList = json_decode($this->ReadAttributeString('StateList'), true);
         $certificates = json_decode($this->GetCertificates(), true);
+        if (empty($certificates)) {
+            return false;
+        }
         $timestamp = (string) date('d.m.Y, H:i:s');
         if (array_key_exists('response', $certificates)) {
             $response = $certificates['response'];

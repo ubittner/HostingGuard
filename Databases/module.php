@@ -102,6 +102,7 @@ class HostingGuardDatabases extends IPSModule
     public function ResetStateList(): void
     {
         $this->WriteAttributeString('StateList', '[]');
+        $this->UpdateData(true);
     }
 
     public function UpdateData(bool $UseNotification): bool
@@ -115,6 +116,9 @@ class HostingGuardDatabases extends IPSModule
         $this->SetTimerInterval('UpdateData', $this->ReadPropertyInteger('UpdateInterval') * 1000 * 60);
         $stateList = json_decode($this->ReadAttributeString('StateList'), true);
         $databases = json_decode($this->GetDatabases(), true);
+        if (empty($databases)) {
+            return false;
+        }
         $timestamp = (string) date('d.m.Y, H:i:s');
         if (array_key_exists('response', $databases)) {
             $response = $databases['response'];
