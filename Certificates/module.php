@@ -222,7 +222,7 @@ class HostingGuardCertificates extends IPSModule
             }
         }
         $string = "<table style='width: 100%; border-collapse: collapse;'>";
-        $string .= '<tr><td><b>Status</b></td><td><b>Name</b></td><td><b>Zertifikatsstatus</b></td><td><b>Gültigigkeit</b></td><td><b>Tage</b></td><td><b>Produkt</b></td><td><b>Automatische Verlängerung</b></td><td><b>Auftragsstatus</b></td><td><b>Letzte Aktualisierung</b></td></tr>';
+        $string .= '<tr><td><b>Status</b></td><td><b>Name</b></td><td><b>Zertifikat</b></td><td><b>Gültig bis</b></td><td><b>Tage</b></td><td><b>Produkt</b></td><td><b>Verlängerung</b></td><td><b>Auftragsstatus</b></td><td><b>Letzte Aktualisierung</b></td></tr>';
         $stateList = json_decode($this->ReadAttributeString('StateList'), true);
         if (!empty($stateList)) {
             foreach ($stateList as $key => $element) {
@@ -306,7 +306,7 @@ class HostingGuardCertificates extends IPSModule
         $minute = $time->minute;
         $second = $time->second;
         $definedTime = $hour . ':' . $minute . ':' . $second;
-        if (time() >= strtotime($definedTime)) {
+        if ($now > strtotime($definedTime)) {
             $timestamp = mktime($hour, $minute, $second, (int) date('n'), (int) date('j') + 1, (int) date('Y'));
         } else {
             $timestamp = mktime($hour, $minute, $second, (int) date('n'), (int) date('j'), (int) date('Y'));
