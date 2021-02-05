@@ -101,6 +101,7 @@ class HostingGuardCertificates extends IPSModule
 
     public function ResetStateList(): void
     {
+        $this->SetResetStateListTimer();
         $this->WriteAttributeString('StateList', '[]');
         $this->UpdateData(true);
     }
@@ -163,20 +164,17 @@ class HostingGuardCertificates extends IPSModule
                                 $target = new DateTime(substr($endDate, 0, 10));
                                 $interval = $today->diff($target);
                                 $daysLeft = $interval->format('%R%a');
+                                $this->SendDebug(__FUNCTION__, '$daysLeft : ' . $daysLeft, 0);
+                                $this->SendDebug(__FUNCTION__, '$daysLeft (int) : ' . (int) $daysLeft, 0);
                             }
                             $status = 0;
                             $statusChanged = false;
                             if (!empty($daysLeft)) {
-                                if ((int) $daysLeft == $daysLeft && (int) $daysLeft > 0) {
-                                    if (((int) $daysLeft < intval($this->ReadPropertyInteger('ThresholdExceeded'))) && ((int) $daysLeft > intval($this->ReadPropertyInteger('CriticalCondition')))) {
-                                        $status = 1;
-                                        $statusChanged = true;
-                                    }
-                                    if ((int) $daysLeft <= $this->ReadPropertyInteger('CriticalCondition')) {
-                                        $status = 2;
-                                        $statusChanged = true;
-                                    }
-                                } else {
+                                if (((int) $daysLeft < intval($this->ReadPropertyInteger('ThresholdExceeded'))) && ((int) $daysLeft > intval($this->ReadPropertyInteger('CriticalCondition')))) {
+                                    $status = 1;
+                                    $statusChanged = true;
+                                }
+                                if ((int) $daysLeft <= $this->ReadPropertyInteger('CriticalCondition')) {
                                     $status = 2;
                                     $statusChanged = true;
                                 }

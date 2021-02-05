@@ -56,7 +56,7 @@
           "type": "NumberSpinner",
           "name": "UpdateInterval",
           "caption": "Aktualisierungsintervall",
-          "suffix": "Stunden"
+          "suffix": "Stunde(n)"
         }
       ]
     },
