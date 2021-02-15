@@ -43,18 +43,19 @@ trait HGCA_notification
                 $id = $webFront->ID;
                 if ($id != 0 && @IPS_ObjectExists($id)) {
                     foreach ($stateList as $element) {
+                        if (!$element->notification) {
+                            continue;
+                        }
                         $notification = true;
                         if ($OnlyStateChanges) {
                             if (!$element->statusChanged) {
                                 $notification = false;
                             }
                         }
-
                         $date = substr($element->endDate, 0, 10);
                         $date = strtotime($date);
                         $date = date('d.m.Y', $date);
                         $time = substr($element->endDate, 11, 8);
-
                         switch ($element->actualStatus) {
                             case 1:
                                 $unicode = json_decode('"\u26a0\ufe0f"'); # warning
@@ -110,6 +111,9 @@ trait HGCA_notification
                 $id = $device->ID;
                 if ($id != 0 && @IPS_ObjectExists($id)) {
                     foreach ($stateList as $element) {
+                        if (!$element->notification) {
+                            continue;
+                        }
                         $notification = true;
                         if ($OnlyStateChanges) {
                             if (!$element->statusChanged) {
@@ -180,6 +184,9 @@ trait HGCA_notification
                     $address = $recipient->Address;
                     if (!empty($address) && strlen($address) > 3) {
                         foreach ($stateList as $element) {
+                            if (!$element->notification) {
+                                continue;
+                            }
                             $notification = true;
                             if ($OnlyStateChanges) {
                                 if (!$element->statusChanged) {

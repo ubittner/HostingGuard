@@ -127,6 +127,11 @@ class HostingGuardCertificates extends IPSModule
                 $data = $response['data'];
                 if (!empty($data)) {
                     foreach ($data as $dataElement) {
+                        //id
+                        $id = '';
+                        if (array_key_exists('id', $dataElement)) {
+                            $id = (string) $dataElement['id'];
+                        }
                         //commonName
                         $commonName = '-';
                         if (array_key_exists('commonName', $dataElement)) {
@@ -157,7 +162,9 @@ class HostingGuardCertificates extends IPSModule
                         if (array_key_exists('orderStatus', $dataElement)) {
                             $orderStatus = (string) $dataElement['orderStatus'];
                         }
-                        if ($commonName != '-') {
+                        if ($id != '') {
+                            $this->SendDebug(__FUNCTION__, 'id: ' . $id, 0);
+                            $this->SendDebug(__FUNCTION__, 'commonName: ' . $commonName, 0);
                             $daysLeft = '';
                             if (!empty($endDate)) {
                                 $today = new DateTime(date('Y-m-d'));
@@ -167,21 +174,32 @@ class HostingGuardCertificates extends IPSModule
                                 $this->SendDebug(__FUNCTION__, '$daysLeft : ' . $daysLeft, 0);
                                 $this->SendDebug(__FUNCTION__, '$daysLeft (int) : ' . (int) $daysLeft, 0);
                             }
-                            $status = 0;
-                            $statusChanged = false;
-                            if (!empty($daysLeft)) {
-                                if (((int) $daysLeft < intval($this->ReadPropertyInteger('ThresholdExceeded'))) && ((int) $daysLeft > intval($this->ReadPropertyInteger('CriticalCondition')))) {
-                                    $status = 1;
-                                    $statusChanged = true;
-                                }
-                                if ((int) $daysLeft <= $this->ReadPropertyInteger('CriticalCondition')) {
-                                    $status = 2;
-                                    $statusChanged = true;
-                                }
-                            }
-                            $key = array_search($commonName, array_column($stateList, 'commonName'));
+                            $this->SendDebug(__FUNCTION__, 'id:' . $id, 0);
+                            $key = array_search($id, array_column($stateList, 'id'));
+                            $this->SendDebug(__FUNCTION__, 'Key: ' . json_encode($key), 0);
+                            //id doesn't exist, add to state list
                             if ($key === false) {
+                                $status = 0; #ok
+                                $statusChanged = false;
+                                if (!empty($daysLeft)) {
+                                    if (((int) $daysLeft <= intval($this->ReadPropertyInteger('ThresholdExceeded'))) && ((int) $daysLeft > intval($this->ReadPropertyInteger('CriticalCondition')))) {
+                                        $status = 1; #threshold exceeded
+                                        $statusChanged = true;
+                                    }
+                                    if ((int) $daysLeft <= $this->ReadPropertyInteger('CriticalCondition')) {
+                                        $status = 2; #warning
+                                        $statusChanged = true;
+                                    }
+                                }
+                                $notification = true;
+                                if ($certificateStatus != 'active') {
+                                    $notification = false;
+                                }
+                                if ($daysLeft < 0) {
+                                    $notification = false;
+                                }
                                 array_push($stateList, [
+                                    'id'                => $id,
                                     'commonName'        => $commonName,
                                     'certificateStatus' => $certificateStatus,
                                     'endDate'           => $endDate,
@@ -192,15 +210,34 @@ class HostingGuardCertificates extends IPSModule
                                     'actualStatus'      => $status,
                                     'lastStatus'        => $status,
                                     'statusChanged'     => $statusChanged,
-                                    'timestamp'         => (string) date('d.m.Y, H:i:s')]);
+                                    'notification'      => $notification,
+                                    'timestamp'         => $timestamp]); //(string) date('d.m.Y, H:i:s')]);
                             }
+                            //id already exists
                             if ($key !== false) {
+                                $notification = true;
+                                if ($certificateStatus != 'active') {
+                                    $notification = false;
+                                }
+                                if ($daysLeft < 0) {
+                                    $notification = false;
+                                }
+                                $status = 0; #ok
+                                if (!empty($daysLeft)) {
+                                    if (((int) $daysLeft <= intval($this->ReadPropertyInteger('ThresholdExceeded'))) && ((int) $daysLeft > intval($this->ReadPropertyInteger('CriticalCondition')))) {
+                                        $status = 1; #threshold exceeded
+                                    }
+                                    if ((int) $daysLeft <= $this->ReadPropertyInteger('CriticalCondition')) {
+                                        $status = 2; #warning
+                                    }
+                                }
                                 $lastStatus = $stateList[$key]['actualStatus'];
                                 $statusChanged = false;
                                 if ($status != $lastStatus) {
                                     $statusChanged = true;
                                 }
                                 $stateList[$key] = [
+                                    'id'                => $id,
                                     'commonName'        => $commonName,
                                     'certificateStatus' => $certificateStatus,
                                     'endDate'           => $endDate,
@@ -211,6 +248,7 @@ class HostingGuardCertificates extends IPSModule
                                     'actualStatus'      => $status,
                                     'lastStatus'        => $lastStatus,
                                     'statusChanged'     => $statusChanged,
+                                    'notification'      => $notification,
                                     'timestamp'         => $timestamp];
                             }
                             $this->WriteAttributeString('StateList', json_encode($stateList));
