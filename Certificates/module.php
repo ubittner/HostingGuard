@@ -101,6 +101,7 @@ class HostingGuardCertificates extends IPSModule
 
     public function ResetStateList(): void
     {
+        $this->SendDebug(__FUNCTION__, 'Funktion ResetStateList ausgeführt', 0);
         $this->SetResetStateListTimer();
         $this->WriteAttributeString('StateList', '[]');
         $this->UpdateData(true);
@@ -336,18 +337,20 @@ class HostingGuardCertificates extends IPSModule
 
     private function SetResetStateListTimer(): void
     {
-        $now = time();
+        $this->SendDebug(__FUNCTION__, 'Funktion SetResetStateListTimer ausgeführt', 0);
         $time = json_decode($this->ReadPropertyString('ResetStateListTime'));
         $hour = $time->hour;
         $minute = $time->minute;
         $second = $time->second;
         $definedTime = $hour . ':' . $minute . ':' . $second;
-        if ($now > strtotime($definedTime)) {
+        if (time() >= strtotime($definedTime)) {
             $timestamp = mktime($hour, $minute, $second, (int) date('n'), (int) date('j') + 1, (int) date('Y'));
         } else {
             $timestamp = mktime($hour, $minute, $second, (int) date('n'), (int) date('j'), (int) date('Y'));
         }
-        $this->SetTimerInterval('ResetStateList', ($timestamp - $now) * 1000);
+        $interval = ($timestamp - time()) * 1000;
+        $this->SendDebug(__FUNCTION__, 'Timer Interval: ' . $interval, 0);
+        $this->SetTimerInterval('ResetStateList', $interval);
     }
 
     private function ValidateConfiguration(): bool

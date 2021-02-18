@@ -183,14 +183,15 @@ trait HGCA_notification
                 if ($id != 0 && @IPS_ObjectExists($id)) {
                     $address = $recipient->Address;
                     if (!empty($address) && strlen($address) > 3) {
+                        $text = "\n";
+                        $notification = false;
                         foreach ($stateList as $element) {
                             if (!$element->notification) {
                                 continue;
                             }
-                            $notification = true;
                             if ($OnlyStateChanges) {
                                 if (!$element->statusChanged) {
-                                    $notification = false;
+                                    continue;
                                 }
                             }
                             $interval = $this->ReadPropertyInteger('UpdateInterval');
@@ -204,51 +205,51 @@ trait HGCA_notification
                             $time = substr($element->endDate, 11, 8);
                             switch ($element->actualStatus) {
                                 case 1:
-                                    $unicode = json_decode('"\u26a0\ufe0f"'); # warning
-                                    $stateText = $unicode . ' Warnung: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . ' ab!';
-                                    $notificationText = "Zertifikate können im Kundencenter verlängert oder neu erstellt werden.\n";
-                                    $notificationText .= "\n";
-                                    $notificationText .= "Wir Informieren Sie, sobald:\n";
-                                    $notificationText .= "- der Zustand wieder in Ordnung ist oder ein neues Zertifikat ausgestellt wurde\n";
-                                    $notificationText .= "- der Zustand kritisch wird und dringender Handlungsbedarf besteht\n";
-                                    $notificationText .= "\n";
-                                    $notificationText .= 'Es kann bis zu ' . $updateInterval . ' dauern, bis die Benachrichtigung versendet wird.';
-                                    if (!$this->ReadPropertyBoolean('NotifyThresholdExceeded')) {
-                                        $notification = false;
+                                    if ($this->ReadPropertyBoolean('NotifyThresholdExceeded')) {
+                                        $notification = true;
+                                        $unicode = json_decode('"\u26a0\ufe0f"'); # warning
+                                        $text .= "------------------------------------------------------------------------------------------------------------------------------------------\n";
+                                        $text .= $unicode . ' Warnung: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . " ab!\n";
+                                        $text .= "Zertifikate können im Kundencenter verlängert oder neu erstellt werden.\n";
+                                        $text .= "\n";
+                                        $text .= "Wir Informieren Sie, sobald:\n";
+                                        $text .= "- der Zustand wieder in Ordnung ist oder ein neues Zertifikat ausgestellt wurde\n";
+                                        $text .= "- der Zustand kritisch wird und dringender Handlungsbedarf besteht\n";
+                                        $text .= "\n";
+                                        $text .= 'Es kann bis zu ' . $updateInterval . " dauern, bis die Benachrichtigung versendet wird.\n";
+                                        $text .= "------------------------------------------------------------------------------------------------------------------------------------------\n\n";
                                     }
                                     break;
 
                                 case 2:
-                                    $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
-                                    $stateText = $unicode . ' Kritischer Zustand: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . ' ab!';
-                                    $notificationText = "Zertifikate können im Kundencenter eingesehen, verlängert oder neu erstellt werden.\n";
-                                    $notificationText .= "\n";
-                                    $notificationText .= "Wir benachrichtigen Sie, sobald der Zustand wieder in Ordnung ist oder \n";
-                                    $notificationText .= "ein neues Zertifikat ausgestellt wurde.\n";
-                                    $notificationText .= "\n";
-                                    $notificationText .= 'Es kann bis zu ' . $updateInterval . ' dauern, bis die Benachrichtigung versendet wird.';
-                                    if (!$this->ReadPropertyBoolean('NotifyCriticalCondition')) {
-                                        $notification = false;
+                                    if ($this->ReadPropertyBoolean('NotifyCriticalCondition')) {
+                                        $notification = true;
+                                        $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
+                                        $text .= "------------------------------------------------------------------------------------------------------------------------------------------\n";
+                                        $text .= $unicode . ' Kritischer Zustand: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . " ab!\n";
+                                        $text .= "Zertifikate können im Kundencenter eingesehen, verlängert oder neu erstellt werden.\n";
+                                        $text .= "\n";
+                                        $text .= "Wir benachrichtigen Sie, sobald der Zustand wieder in Ordnung ist oder \n";
+                                        $text .= "ein neues Zertifikat ausgestellt wurde.\n";
+                                        $text .= "\n";
+                                        $text .= 'Es kann bis zu ' . $updateInterval . " dauern, bis die Benachrichtigung versendet wird.\n";
+                                        $text .= "------------------------------------------------------------------------------------------------------------------------------------------\n\n";
                                     }
                                     break;
 
                                 default:
-                                    $unicode = json_decode('"\u2705"'); # white_check_mark
-                                    $stateText = $unicode . ' Status OK: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . ' ab!';
-                                    $notificationText = 'Es besteht kein Handlungsbedarf!';
-                                    if (!$this->ReadPropertyBoolean('Notify')) {
-                                        $notification = false;
+                                    if ($this->ReadPropertyBoolean('Notify')) {
+                                        $notification = true;
+                                        $unicode = json_decode('"\u2705"'); # white_check_mark
+                                        $text .= "------------------------------------------------------------------------------------------------------------------------------------------\n";
+                                        $text .= $unicode . ' Status OK: SSL Zertifikat ' . $element->commonName . ' läuft in ' . (int) $element->daysLeft . ' Tagen am ' . $date . ' um ' . $time . " ab!\n";
+                                        $text .= "Es besteht kein Handlungsbedarf!\n";
+                                        $text .= "------------------------------------------------------------------------------------------------------------------------------------------\n\n";
                                     }
                             }
-                            if ($notification) {
-                                $subject = 'Hosting Guard SSL Zertifikat';
-                                $text = "------------------------------------------------------------------------------------------------------------------------------------------\n";
-                                $text .= $stateText . "\n";
-                                $text .= "\n";
-                                $text .= $notificationText . "\n";
-                                $text .= "------------------------------------------------------------------------------------------------------------------------------------------\n";
-                                @SMTP_SendMailEx($id, $address, $subject, $text);
-                            }
+                        }
+                        if ($notification) {
+                            @SMTP_SendMailEx($id, $address, 'Hosting Guard SSL Zertifikat', $text);
                         }
                     }
                 }
