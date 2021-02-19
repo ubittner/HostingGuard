@@ -252,6 +252,7 @@ class HostingGuardCertificates extends IPSModule
                                     'notification'      => $notification,
                                     'timestamp'         => $timestamp];
                             }
+                            array_multisort(array_column($stateList, 'daysLeft'), SORT_ASC, $stateList);
                             $this->WriteAttributeString('StateList', json_encode($stateList));
                         }
                     }
