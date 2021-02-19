@@ -101,7 +101,7 @@ class HostingGuardCertificates extends IPSModule
 
     public function ResetStateList(): void
     {
-        $this->SendDebug(__FUNCTION__, 'Funktion ResetStateList ausgeführt', 0);
+        $this->SendDebug(__FUNCTION__, 'Methode wird ausgeführt', 0);
         $this->SetResetStateListTimer();
         $this->WriteAttributeString('StateList', '[]');
         $this->UpdateData(true);
@@ -109,6 +109,7 @@ class HostingGuardCertificates extends IPSModule
 
     public function UpdateData(bool $UseNotification): bool
     {
+        $this->SendDebug(__FUNCTION__, 'Methode wird ausgeführt', 0);
         if ($this->CheckMaintenanceMode()) {
             return false;
         }

@@ -8,6 +8,7 @@ trait HGCA_notification
 {
     public function Notify(bool $OnlyStateChanges): bool
     {
+        $this->SendDebug(__FUNCTION__, 'Methode wird ausgeführt', 0);
         if ($this->CheckMaintenanceMode()) {
             return false;
         }
@@ -24,6 +25,7 @@ trait HGCA_notification
 
     private function SendWebFrontNotification(bool $OnlyStateChanges): bool
     {
+        $this->SendDebug(__FUNCTION__, 'Methode wird ausgeführt', 0);
         if ($this->CheckMaintenanceMode()) {
             return false;
         }
@@ -38,6 +40,7 @@ trait HGCA_notification
         if (empty($stateList)) {
             return false;
         }
+        $stateList = array_reverse($stateList);
         foreach ($webFronts as $webFront) {
             if ($webFront->Use) {
                 $id = $webFront->ID;
@@ -92,6 +95,7 @@ trait HGCA_notification
 
     private function SendMobileDeviceNotification(bool $OnlyStateChanges): bool
     {
+        $this->SendDebug(__FUNCTION__, 'Methode wird ausgeführt', 0);
         if ($this->CheckMaintenanceMode()) {
             return false;
         }
@@ -163,6 +167,7 @@ trait HGCA_notification
 
     private function SendMailNotification(bool $OnlyStateChanges): bool
     {
+        $this->SendDebug(__FUNCTION__, 'Methode wird ausgeführt', 0);
         if ($this->CheckMaintenanceMode()) {
             return false;
         }
