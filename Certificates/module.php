@@ -261,7 +261,7 @@ class HostingGuardCertificates extends IPSModule
             }
         }
         $string = "<table style='width: 100%; border-collapse: collapse;'>";
-        $string .= '<tr><td><b>Status</b></td><td><b>Name</b></td><td><b>Zertifikat</b></td><td><b>Gültig bis</b></td><td><b>Tage</b></td><td><b>Produkt</b></td><td><b>Verlängerung</b></td><td><b>Auftragsstatus</b></td><td><b>Letzte Aktualisierung</b></td></tr>';
+        $string .= '<tr><td><b>Status</b></td><td><b>Name</b></td><td><b>Zertifikat</b></td><td><b>Tage</b></td><td><b>Verlängerung</b></td><td><b>Gültig bis</b></td><td><b>Produkt</b></td><td><b>Auftragsstatus</b></td><td><b>Letzte Aktualisierung</b></td></tr>';
         $stateList = json_decode($this->ReadAttributeString('StateList'), true);
         if (!empty($stateList)) {
             foreach ($stateList as $key => $element) {
@@ -278,7 +278,7 @@ class HostingGuardCertificates extends IPSModule
                     default:
                         $unicode = json_decode('"\u2705"'); # white_check_mark
                 }
-                $string .= '<tr><td>' . $unicode . '</td><td>' . $element['commonName'] . '</td><td>' . $element['certificateStatus'] . '</td><td>' . $element['endDate'] . '</td><td>' . $element['daysLeft'] . '</td><td>' . $element['product'] . '</td><td>' . $element['autoRenew'] . '</td><td>' . $element['orderStatus'] . '</td><td>' . $timestamp . '</td></tr>';
+                $string .= '<tr><td>' . $unicode . '</td><td>' . $element['commonName'] . '</td><td>' . $element['certificateStatus'] . '</td><td>' . $element['daysLeft'] . '</td><td>' . $element['autoRenew'] . '</td><td>' . $element['endDate'] . '</td><td>' . $element['product'] . '</td><td>' . $element['orderStatus'] . '</td><td>' . $timestamp . '</td></tr>';
             }
         }
         $string .= '</table>';
