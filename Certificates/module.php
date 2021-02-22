@@ -254,6 +254,15 @@ class HostingGuardCertificates extends IPSModule
                                     'timestamp'         => $timestamp];
                             }
                             array_multisort(array_column($stateList, 'daysLeft'), SORT_ASC, $stateList);
+                            if (!empty($stateList)) {
+                                foreach ($stateList as $key => $element) {
+                                    if ($element['certificateStatus'] == 'revoked') {
+                                        array_push($stateList, $stateList[$key]);
+                                        unset($stateList[$key]);
+                                    }
+                                }
+                            }
+                            $stateList = array_values($stateList);
                             $this->WriteAttributeString('StateList', json_encode($stateList));
                         }
                     }
@@ -266,16 +275,23 @@ class HostingGuardCertificates extends IPSModule
         if (!empty($stateList)) {
             foreach ($stateList as $key => $element) {
                 $actualStatus = $element['actualStatus'];
+                if ($element['certificateStatus'] == 'revoked') {
+                    $actualStatus = 3;
+                }
                 switch ($actualStatus) {
-                    case 1:
+                    case 1: #warning
                         $unicode = json_decode('"\u26a0\ufe0f"'); # warning
                     break;
 
-                    case 2:
+                    case 2: #critical condition
                         $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
                     break;
 
-                    default:
+                    case 3: #revoked
+                        $unicode = json_decode('"\ud83d\udeab"'); # no_entry_sign
+                    break;
+
+                    default: # ok
                         $unicode = json_decode('"\u2705"'); # white_check_mark
                 }
                 $string .= '<tr><td>' . $unicode . '</td><td>' . $element['commonName'] . '</td><td>' . $element['certificateStatus'] . '</td><td>' . $element['daysLeft'] . '</td><td>' . $element['autoRenew'] . '</td><td>' . $element['endDate'] . '</td><td>' . $element['product'] . '</td><td>' . $element['orderStatus'] . '</td><td>' . $timestamp . '</td></tr>';
