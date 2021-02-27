@@ -62,6 +62,74 @@
     },
     {
       "type": "ExpansionPanel",
+      "caption": "Visualisierung",
+      "items": [
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "DisplayCriticalCondition",
+              "caption": "\u2757"
+            },
+            {
+              "type": "Label",
+              "caption": "Kritischer Zustand"
+            }
+          ]
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "DisplayCriticalConditionDays",
+          "caption": "Kritischen Zustand anzeigen bis",
+          "suffix": "Tage"
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "DisplayThresholdExceeded",
+              "caption": "\u26a0\ufe0f"
+            },
+            {
+              "type": "Label",
+              "caption": "Warnung"
+            }
+          ]
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "DisplayNormalState",
+              "caption": "\u2705"
+            },
+            {
+              "type": "Label",
+              "caption": "OK"
+            }
+          ]
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "DisplayRevoked",
+              "caption": "\ud83d\udeab"
+            },
+            {
+              "type": "Label",
+              "caption": "Zurückgezogen"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ExpansionPanel",
       "caption": "Benachrichtigungen",
       "items": [
         {
@@ -184,6 +252,15 @@
               "edit": {
                 "type": "ValidationTextBox"
               }
+            },
+            {
+              "caption": "Betreff",
+              "name": "Subject",
+              "width": "250px",
+              "add": "Hosting Guard SSL Zertifikat",
+              "edit": {
+                "type": "ValidationTextBox"
+              }
             }
           ]
         },
@@ -196,7 +273,7 @@
           "items": [
             {
               "type": "CheckBox",
-              "name": "Notify",
+              "name": "UseImmediateNotificationNormalState",
               "caption": "\u2705"
             },
             {
@@ -210,7 +287,7 @@
           "items": [
             {
               "type": "CheckBox",
-              "name": "NotifyThresholdExceeded",
+              "name": "UseImmediateNotificationThresholdExceeded",
               "caption": "\u26a0\ufe0f"
             },
             {
@@ -224,7 +301,7 @@
           "items": [
             {
               "type": "CheckBox",
-              "name": "NotifyCriticalCondition",
+              "name": "UseImmediateNotificationCriticalCondition",
               "caption": "\u2757"
             },
             {
@@ -234,24 +311,141 @@
           ]
         },
         {
+          "type": "NumberSpinner",
+          "name": "ImmediateNotificationCriticalConditionDays",
+          "caption": "Kritischen Zustand melden bis",
+          "suffix": "Tage"
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "UseImmediateNotificationRevoked",
+              "caption": "\ud83d\udeab"
+            },
+            {
+              "type": "Label",
+              "caption": "Zurückgezogen"
+            }
+          ]
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "ImmediateNotificationRevokedDays",
+          "caption": "Zurückgezogene Zertifikate melden bis",
+          "suffix": "Tage"
+        },
+        {
           "type": "CheckBox",
-          "name": "UseWebFrontNotification",
+          "name": "UseImmediateWebFrontNotification",
           "caption": "WebFront"
         },
         {
           "type": "CheckBox",
-          "name": "UseMobileDeviceNotification",
+          "name": "UseImmediateMobileDeviceNotification",
           "caption": "Mobile Geräte"
         },
         {
           "type": "CheckBox",
-          "name": "UseMailNotification",
+          "name": "UseImmediateMailNotification",
+          "caption": "E-Mail"
+        },
+        {
+          "type": "Label",
+          "caption": " "
+        },
+        {
+          "type": "Label",
+          "caption": "Täglicher Statusbericht"
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "UseDailyNotificationNormalState",
+              "caption": "\u2705"
+            },
+            {
+              "type": "Label",
+              "caption": "OK"
+            }
+          ]
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "UseDailyNotificationThresholdExceeded",
+              "caption": "\u26a0\ufe0f"
+            },
+            {
+              "type": "Label",
+              "caption": "Warnung"
+            }
+          ]
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "UseDailyNotificationCriticalCondition",
+              "caption": "\u2757"
+            },
+            {
+              "type": "Label",
+              "caption": "Kritischer Zustand"
+            }
+          ]
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "DailyNotificationCriticalConditionDays",
+          "caption": "Kritischen Zustand melden bis",
+          "suffix": "Tage"
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "UseDailyNotificationRevoked",
+              "caption": "\ud83d\udeab"
+            },
+            {
+              "type": "Label",
+              "caption": "Zurückgezogen"
+            }
+          ]
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "DailyNotificationRevokedDays",
+          "caption": "Zurückgezogene Zertifikate melden bis",
+          "suffix": "Tage"
+        },
+        {
+          "type": "CheckBox",
+          "name": "UseDailyWebFrontNotification",
+          "caption": "WebFront"
+        },
+        {
+          "type": "CheckBox",
+          "name": "UseDailyMobileDeviceNotification",
+          "caption": "Mobile Geräte"
+        },
+        {
+          "type": "CheckBox",
+          "name": "UseDailyMailNotification",
           "caption": "E-Mail"
         },
         {
           "type": "SelectTime",
-          "name": "ResetStateListTime",
-          "caption": "Benachrichtigung zurücksetzen"
+          "name": "DailyReportTime",
+          "caption": "Ausführen um"
         }
       ]
     }
@@ -268,23 +462,18 @@
         },
         {
           "type": "Button",
-          "caption": "Daten aktualisieren",
-          "onClick": "$result = HGCA_UpdateData($id, false); if ($result) {echo 'Die Daten wurden aktualisiert!';} else {echo 'Es ist ein Fehler aufgetreten!';}"
-        },
-        {
-          "type": "Button",
-          "caption": "Benachrichtigungen versenden",
-          "onClick": "$result = HGCA_Notify($id, false); if ($result) {echo 'Die Benachrichtigungen wurden versendet!';} else {echo 'Es ist ein Fehler aufgetreten!';}"
-        },
-        {
-          "type": "Button",
           "caption": "Statusliste anzeigen",
           "onClick": "HGCA_ShowStateList($id);"
         },
         {
           "type": "Button",
-          "caption": "Statusliste zurücksetzen",
-          "onClick": "HGCA_ResetStateList($id); echo 'Die Statusliste wurde zurückgesetzt!';"
+          "caption": "Daten aktualisieren",
+          "onClick": "$result = HGCA_UpdateData($id, false); if ($result) {echo 'Die Daten wurden aktualisiert!';} else {echo 'Es ist ein Fehler aufgetreten!';}"
+        },
+        {
+          "type": "Button",
+          "caption": "Täglichen Statusbericht ausführen",
+          "onClick": "HGCA_TriggerDailyReport($id); echo 'Die Statusliste wurde zurückgesetzt!';"
         }
       ]
     }

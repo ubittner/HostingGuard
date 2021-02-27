@@ -44,8 +44,8 @@ class HostingGuardCertificates extends IPSModule
             $this->DisableTimers();
             return;
         }
-        $this->SetResetStateListTimer();
-        $this->UpdateData(true);
+        $this->SetDailyReportTimer();
+        $this->UpdateData(false);
     }
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
@@ -65,7 +65,7 @@ class HostingGuardCertificates extends IPSModule
         $webFronts = json_decode($this->ReadPropertyString('WebFrontNotification'));
         if (!empty($webFronts)) {
             foreach ($webFronts as $webFront) {
-                $formData['elements'][4]['items'][0]['values'][] = [
+                $formData['elements'][5]['items'][0]['values'][] = [
                     'Use'   => $webFront->Use,
                     'ID'    => $webFront->ID,
                     'Name'  => IPS_GetName($webFront->ID)];
@@ -74,7 +74,7 @@ class HostingGuardCertificates extends IPSModule
         $mobileDevices = json_decode($this->ReadPropertyString('MobileDeviceNotification'));
         if (!empty($mobileDevices)) {
             foreach ($mobileDevices as $mobileDevice) {
-                $formData['elements'][4]['items'][1]['values'][] = [
+                $formData['elements'][5]['items'][1]['values'][] = [
                     'Use'   => $mobileDevice->Use,
                     'ID'    => $mobileDevice->ID,
                     'Name'  => IPS_GetName($mobileDevice->ID)];
@@ -83,7 +83,7 @@ class HostingGuardCertificates extends IPSModule
         $recipients = json_decode($this->ReadPropertyString('MailNotification'));
         if (!empty($recipients)) {
             foreach ($recipients as $recipient) {
-                $formData['elements'][4]['items'][2]['values'][] = [
+                $formData['elements'][5]['items'][2]['values'][] = [
                     'Use'       => $recipient->Use,
                     'ID'        => $recipient->ID,
                     'Name'      => IPS_GetName($recipient->ID),
@@ -99,15 +99,15 @@ class HostingGuardCertificates extends IPSModule
         print_r(json_decode($this->ReadAttributeString('StateList'), true));
     }
 
-    public function ResetStateList(): void
+    public function TriggerDailyReport(): void
     {
         $this->SendDebug(__FUNCTION__, 'Methode wird ausgeführt', 0);
-        $this->SetResetStateListTimer();
+        $this->SetDailyReportTimer();
         $this->WriteAttributeString('StateList', '[]');
         $this->UpdateData(true);
     }
 
-    public function UpdateData(bool $UseNotification): bool
+    public function UpdateData(bool $DailyReport): bool
     {
         $this->SendDebug(__FUNCTION__, 'Methode wird ausgeführt', 0);
         if ($this->CheckMaintenanceMode()) {
@@ -129,76 +129,66 @@ class HostingGuardCertificates extends IPSModule
                 $data = $response['data'];
                 if (!empty($data)) {
                     foreach ($data as $dataElement) {
-                        //id
                         $id = '';
                         if (array_key_exists('id', $dataElement)) {
                             $id = (string) $dataElement['id'];
                         }
-                        //commonName
                         $commonName = '-';
                         if (array_key_exists('commonName', $dataElement)) {
                             $commonName = (string) $dataElement['commonName'];
                         }
-                        //status
                         $certificateStatus = '';
                         if (array_key_exists('status', $dataElement)) {
                             $certificateStatus = (string) $dataElement['status'];
                         }
-                        //endDate
                         $endDate = '';
                         if (array_key_exists('endDate', $dataElement)) {
                             $endDate = (string) $dataElement['endDate'];
                         }
-                        //product
                         $product = '';
                         if (array_key_exists('product', $dataElement)) {
                             $product = (string) $dataElement['product'];
                         }
-                        //autoRenew
                         $autoRenew = '';
                         if (array_key_exists('autoRenew', $dataElement)) {
                             $autoRenew = json_encode(boolval($dataElement['autoRenew']));
                         }
-                        //orderStatus
                         $orderStatus = '';
                         if (array_key_exists('orderStatus', $dataElement)) {
                             $orderStatus = (string) $dataElement['orderStatus'];
                         }
                         if ($id != '') {
-                            $this->SendDebug(__FUNCTION__, 'id: ' . $id, 0);
-                            $this->SendDebug(__FUNCTION__, 'commonName: ' . $commonName, 0);
+                            $status = 0; #ok
                             $daysLeft = '';
                             if (!empty($endDate)) {
                                 $today = new DateTime(date('Y-m-d'));
                                 $target = new DateTime(substr($endDate, 0, 10));
                                 $interval = $today->diff($target);
                                 $daysLeft = $interval->format('%R%a');
-                                $this->SendDebug(__FUNCTION__, '$daysLeft : ' . $daysLeft, 0);
-                                $this->SendDebug(__FUNCTION__, '$daysLeft (int) : ' . (int) $daysLeft, 0);
                             }
-                            $this->SendDebug(__FUNCTION__, 'id:' . $id, 0);
+                            if (!empty($daysLeft)) {
+                                if (((int) $daysLeft <= intval($this->ReadPropertyInteger('ThresholdExceeded'))) && ((int) $daysLeft > intval($this->ReadPropertyInteger('CriticalCondition')))) {
+                                    $status = 1; #threshold exceeded
+                                }
+                                if ((int) $daysLeft <= $this->ReadPropertyInteger('CriticalCondition')) {
+                                    $status = 2; #warning
+                                }
+                            }
+                            if ($certificateStatus == 'revoked' || $certificateStatus != 'active') {
+                                $status = 3; #revoked
+                            }
                             $key = array_search($id, array_column($stateList, 'id'));
-                            $this->SendDebug(__FUNCTION__, 'Key: ' . json_encode($key), 0);
-                            //id doesn't exist, add to state list
+                            //certificate doesn't exist, add to state list
                             if ($key === false) {
-                                $status = 0; #ok
-                                $statusChanged = false;
-                                if (!empty($daysLeft)) {
-                                    if (((int) $daysLeft <= intval($this->ReadPropertyInteger('ThresholdExceeded'))) && ((int) $daysLeft > intval($this->ReadPropertyInteger('CriticalCondition')))) {
-                                        $status = 1; #threshold exceeded
+                                switch ($status) {
+                                    case 1: #threshold exceeded
+                                    case 2: #warning
+                                    case 3: #revoked
                                         $statusChanged = true;
-                                    }
-                                    if ((int) $daysLeft <= $this->ReadPropertyInteger('CriticalCondition')) {
-                                        $status = 2; #warning
-                                        $statusChanged = true;
-                                    }
-                                }
-                                $notification = true;
-                                if ($certificateStatus != 'active') {
-                                    $notification = false;
-                                }
-                                if ($daysLeft < 0) {
-                                    $notification = false;
+                                        break;
+
+                                    default: #ok
+                                        $statusChanged = false;
                                 }
                                 array_push($stateList, [
                                     'id'                => $id,
@@ -212,27 +202,10 @@ class HostingGuardCertificates extends IPSModule
                                     'actualStatus'      => $status,
                                     'lastStatus'        => $status,
                                     'statusChanged'     => $statusChanged,
-                                    'notification'      => $notification,
-                                    'timestamp'         => $timestamp]); //(string) date('d.m.Y, H:i:s')]);
+                                    'timestamp'         => $timestamp]);
                             }
-                            //id already exists
+                            //certificate already exists
                             if ($key !== false) {
-                                $notification = true;
-                                if ($certificateStatus != 'active') {
-                                    $notification = false;
-                                }
-                                if ($daysLeft < 0) {
-                                    $notification = false;
-                                }
-                                $status = 0; #ok
-                                if (!empty($daysLeft)) {
-                                    if (((int) $daysLeft <= intval($this->ReadPropertyInteger('ThresholdExceeded'))) && ((int) $daysLeft > intval($this->ReadPropertyInteger('CriticalCondition')))) {
-                                        $status = 1; #threshold exceeded
-                                    }
-                                    if ((int) $daysLeft <= $this->ReadPropertyInteger('CriticalCondition')) {
-                                        $status = 2; #warning
-                                    }
-                                }
                                 $lastStatus = $stateList[$key]['actualStatus'];
                                 $statusChanged = false;
                                 if ($status != $lastStatus) {
@@ -250,7 +223,6 @@ class HostingGuardCertificates extends IPSModule
                                     'actualStatus'      => $status,
                                     'lastStatus'        => $lastStatus,
                                     'statusChanged'     => $statusChanged,
-                                    'notification'      => $notification,
                                     'timestamp'         => $timestamp];
                             }
                             array_multisort(array_column($stateList, 'daysLeft'), SORT_ASC, $stateList);
@@ -275,33 +247,46 @@ class HostingGuardCertificates extends IPSModule
         if (!empty($stateList)) {
             foreach ($stateList as $key => $element) {
                 $actualStatus = $element['actualStatus'];
-                if ($element['certificateStatus'] == 'revoked') {
-                    $actualStatus = 3;
-                }
                 switch ($actualStatus) {
                     case 1: #warning
                         $unicode = json_decode('"\u26a0\ufe0f"'); # warning
-                    break;
+                        if (!$this->ReadPropertyBoolean('DisplayThresholdExceeded')) {
+                            continue 2;
+                        }
+                        break;
 
                     case 2: #critical condition
                         $unicode = json_decode('"\u2757"'); # heavy_exclamation_mark
+                        if (!$this->ReadPropertyBoolean('DisplayCriticalCondition')) {
+                            continue 2;
+                        } else {
+                            $daysLeft = $element['daysLeft'];
+                            $maxDays = $this->ReadPropertyInteger('DisplayCriticalConditionDays');
+                            if ($daysLeft < $maxDays) {
+                                continue 2;
+                            }
+                        }
                     break;
 
                     case 3: #revoked
                         $unicode = json_decode('"\ud83d\udeab"'); # no_entry_sign
+                        if (!$this->ReadPropertyBoolean('DisplayRevoked')) {
+                            continue 2;
+                        }
                     break;
 
-                    default: # ok
+                    default: #ok
                         $unicode = json_decode('"\u2705"'); # white_check_mark
+                        if (!$this->ReadPropertyBoolean('DisplayNormalState')) {
+                            continue 2;
+                        }
                 }
                 $string .= '<tr><td>' . $unicode . '</td><td>' . $element['commonName'] . '</td><td>' . $element['certificateStatus'] . '</td><td>' . $element['daysLeft'] . '</td><td>' . $element['autoRenew'] . '</td><td>' . $element['endDate'] . '</td><td>' . $element['product'] . '</td><td>' . $element['orderStatus'] . '</td><td>' . $timestamp . '</td></tr>';
             }
         }
         $string .= '</table>';
         $this->SetValue('StateList', $string);
-        if ($UseNotification) {
-            $this->Notify(true);
-        }
+        $this->Notify($DailyReport);
         return true;
     }
 
@@ -320,16 +305,33 @@ class HostingGuardCertificates extends IPSModule
         $this->RegisterPropertyInteger('ThresholdExceeded', 45);
         $this->RegisterPropertyInteger('CriticalCondition', 20);
         $this->RegisterPropertyInteger('UpdateInterval', 6);
+        $this->RegisterPropertyBoolean('DisplayCriticalCondition', true);
+        $this->RegisterPropertyInteger('DisplayCriticalConditionDays', -7);
+        $this->RegisterPropertyBoolean('DisplayThresholdExceeded', true);
+        $this->RegisterPropertyBoolean('DisplayNormalState', true);
+        $this->RegisterPropertyBoolean('DisplayRevoked', true);
         $this->RegisterPropertyString('WebFrontNotification', '[]');
         $this->RegisterPropertyString('MobileDeviceNotification', '[]');
         $this->RegisterPropertyString('MailNotification', '[]');
-        $this->RegisterPropertyBoolean('Notify', true);
-        $this->RegisterPropertyBoolean('NotifyThresholdExceeded', true);
-        $this->RegisterPropertyBoolean('NotifyCriticalCondition', true);
-        $this->RegisterPropertyBoolean('UseWebFrontNotification', true);
-        $this->RegisterPropertyBoolean('UseMobileDeviceNotification', true);
-        $this->RegisterPropertyBoolean('UseMailNotification', true);
-        $this->RegisterPropertyString('ResetStateListTime', '{"hour":7,"minute":0,"second":0}');
+        $this->RegisterPropertyBoolean('UseImmediateNotificationNormalState', true);
+        $this->RegisterPropertyBoolean('UseImmediateNotificationThresholdExceeded', true);
+        $this->RegisterPropertyBoolean('UseImmediateNotificationCriticalCondition', true);
+        $this->RegisterPropertyInteger('ImmediateNotificationCriticalConditionDays', -7);
+        $this->RegisterPropertyBoolean('UseImmediateNotificationRevoked', true);
+        $this->RegisterPropertyInteger('ImmediateNotificationRevokedDays', -7);
+        $this->RegisterPropertyBoolean('UseImmediateWebFrontNotification', true);
+        $this->RegisterPropertyBoolean('UseImmediateMobileDeviceNotification', true);
+        $this->RegisterPropertyBoolean('UseImmediateMailNotification', true);
+        $this->RegisterPropertyBoolean('UseDailyNotificationNormalState', false);
+        $this->RegisterPropertyBoolean('UseDailyNotificationThresholdExceeded', true);
+        $this->RegisterPropertyBoolean('UseDailyNotificationCriticalCondition', true);
+        $this->RegisterPropertyInteger('DailyNotificationCriticalConditionDays', -7);
+        $this->RegisterPropertyBoolean('UseDailyNotificationRevoked', true);
+        $this->RegisterPropertyInteger('DailyNotificationRevokedDays', -7);
+        $this->RegisterPropertyBoolean('UseDailyWebFrontNotification', true);
+        $this->RegisterPropertyBoolean('UseDailyMobileDeviceNotification', true);
+        $this->RegisterPropertyBoolean('UseDailyMailNotification', true);
+        $this->RegisterPropertyString('DailyReportTime', '{"hour":7,"minute":0,"second":0}');
     }
 
     private function RegisterVariables(): void
@@ -343,20 +345,20 @@ class HostingGuardCertificates extends IPSModule
 
     private function RegisterTimers(): void
     {
-        $this->RegisterTimer('UpdateData', 0, 'HGCA_UpdateData(' . $this->InstanceID . ', true);');
-        $this->RegisterTimer('ResetStateList', 0, 'HGCA_ResetStateList(' . $this->InstanceID . ');');
+        $this->RegisterTimer('UpdateData', 0, 'HGCA_UpdateData(' . $this->InstanceID . ', false);');
+        $this->RegisterTimer('DailyReport', 0, 'HGCA_TriggerDailyReport(' . $this->InstanceID . ');');
     }
 
     private function DisableTimers(): void
     {
         $this->SetTimerInterval('UpdateData', 0);
-        $this->SetTimerInterval('ResetStateList', 0);
+        $this->SetTimerInterval('DailyReport', 0);
     }
 
-    private function SetResetStateListTimer(): void
+    private function SetDailyReportTimer(): void
     {
-        $this->SendDebug(__FUNCTION__, 'Funktion SetResetStateListTimer ausgeführt', 0);
-        $time = json_decode($this->ReadPropertyString('ResetStateListTime'));
+        $this->SendDebug(__FUNCTION__, 'Funktion wird ausgeführt', 0);
+        $time = json_decode($this->ReadPropertyString('DailyReportTime'));
         $hour = $time->hour;
         $minute = $time->minute;
         $second = $time->second;
@@ -368,7 +370,7 @@ class HostingGuardCertificates extends IPSModule
         }
         $interval = ($timestamp - time()) * 1000;
         $this->SendDebug(__FUNCTION__, 'Timer Interval: ' . $interval, 0);
-        $this->SetTimerInterval('ResetStateList', $interval);
+        $this->SetTimerInterval('DailyReport', $interval);
     }
 
     private function ValidateConfiguration(): bool
